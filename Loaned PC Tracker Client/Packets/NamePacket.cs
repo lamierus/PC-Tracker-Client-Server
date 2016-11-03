@@ -12,7 +12,7 @@ namespace Loaned_PC_Tracker_Client {
 
     public class NamePacket : Packet {
         public string Name { get; set; }
-        public new int PacketLength {
+        public override int PacketLength {
             get { return CreateDataStream().Length; }
         }
 
@@ -46,7 +46,7 @@ namespace Loaned_PC_Tracker_Client {
         }
 
         // Converts the packet into a byte array for sending/receiving 
-        public new byte[] CreateDataStream() {
+        public override byte[] CreateDataStream() {
             List<byte> dataStream = new List<byte>();
 
             // Add the dataIdentifier

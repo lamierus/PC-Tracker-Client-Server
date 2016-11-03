@@ -27,7 +27,7 @@ namespace Loaned_PC_Tracker_Server {
         public string UserPCSerial { get; set; }
         public string Ticket { get; set; }
         public bool CheckedOut { get; set; }
-        public new int PacketLength {
+        public override int PacketLength {
             get { return CreateDataStream().Length; }
         }
 
@@ -158,7 +158,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         // Converts the packet into a byte array for sending/receiving 
-        public new byte[] CreateDataStream() {
+        public override byte[] CreateDataStream() {
             List<byte> dataStream = new List<byte>();
 
             // Add the dataIdentifier

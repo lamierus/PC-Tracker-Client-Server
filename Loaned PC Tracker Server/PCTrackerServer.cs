@@ -326,7 +326,7 @@ namespace Loaned_PC_Tracker_Server {
                     Client newClient = new Client(clientSocket);
                     ClientList.Add(newClient);
                     UpdateStatus("Client " + newClient.UserName + " connected!");
-                    //SendSitesToClient(newClient);
+                    SendSitesToClient(newClient);
                 } catch (Exception ex) {
                     break;
                 }

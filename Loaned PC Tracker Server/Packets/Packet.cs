@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Loaned_PC_Tracker_Server {
     public class Packet {
         public DataIdentifier Identifier { get; set; }
-        public int PacketLength {
+        public virtual int PacketLength {
             get { return CreateDataStream().Length; }
         }
 
@@ -13,7 +13,7 @@ namespace Loaned_PC_Tracker_Server {
             Identifier = DataIdentifier.Null;
         }
 
-        public byte[] CreateDataStream() {
+        public virtual byte[] CreateDataStream() {
             List<byte> dataStream = new List<byte>();
 
             // Add the dataIdentifier

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Loaned_PC_Tracker_Server {
     public class NumberPacket : Packet {
         public int Number { get; set; }
-        public new int PacketLength {
+        public override int PacketLength {
             get { return CreateDataStream().Length; }
         }
 
@@ -27,30 +27,18 @@ namespace Loaned_PC_Tracker_Server {
             // Read the data identifier from the beginning of the stream (4 bytes)
             Identifier = DataIdentifier.Message;
 
-            // Read the length of the name (4 bytes)
-            int nameLength = BitConverter.ToInt32(dataStream, 4);
-
-            // Read the name field
-            if (nameLength > 0)
-                Number = BitConverter.ToInt32(dataStream, 8);
-            else
-                Number = 0;
+            // Read the Number field (4 bytes)
+            Number = BitConverter.ToInt32(dataStream, 4);
         }
 
         // Converts the packet into a byte array for sending/receiving 
-        public new byte[] CreateDataStream() {
+        public override byte[] CreateDataStream() {
             List<byte> dataStream = new List<byte>();
 
             // Add the dataIdentifier
             dataStream.AddRange(BitConverter.GetBytes((int)Identifier));
-
-            // Add the name length
-            if (Number != 0)
-                dataStream.AddRange(BitConverter.GetBytes(Number));
-            else
-                dataStream.AddRange(BitConverter.GetBytes(0));
-
-            // Add the name
+            
+            // Add the number
             if (Number != 0)
                 dataStream.AddRange(BitConverter.GetBytes(Number));
 

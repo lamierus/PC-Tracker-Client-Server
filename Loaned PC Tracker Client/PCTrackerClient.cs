@@ -54,9 +54,9 @@ namespace Loaned_PC_Tracker_Client {
                     }
                 }
                 ConnectToServer(numRetries);
-                //bgwLoadSites.RunWorkerAsync();
-                //ProgressBarForm = new LoadingProgress("Receiving Sites List");
-                //ProgressBarForm.ShowDialog();
+                bgwLoadSites.RunWorkerAsync();
+                ProgressBarForm = new LoadingProgress("Receiving Sites List");
+                ProgressBarForm.ShowDialog();
             }
         }
 

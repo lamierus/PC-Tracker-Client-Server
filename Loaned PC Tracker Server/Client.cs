@@ -71,5 +71,19 @@ namespace Loaned_PC_Tracker_Server {
                 //Console.WriteLine(" >> " + ex.Message.ToString());
             }
         }
+
+        /// <summary>
+        ///     this is the function that takes care of receiving the packets from the different users,
+        ///     interpreting them and sending out the correct broadcast messages to the other users.
+        /// </summary>
+        public void SendPacketToClient(NamePacket packet) {
+            try {
+                NetworkStream outStream = ClientSocket.GetStream();
+                outStream.Write(packet.CreateDataStream(), 0, packet.PacketLength);
+                outStream.Flush();
+            } catch (Exception ex) {
+                //Console.WriteLine(" >> " + ex.Message.ToString());
+            }
+        }
     }
 }

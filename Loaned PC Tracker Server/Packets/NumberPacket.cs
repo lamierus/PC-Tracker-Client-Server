@@ -4,6 +4,9 @@ using System.Collections.Generic;
 namespace Loaned_PC_Tracker_Server {
     public class NumberPacket : Packet {
         public int Number { get; set; }
+        public new int PacketLength {
+            get { return CreateDataStream().Length; }
+        }
 
         // Default Constructor
         public NumberPacket() {

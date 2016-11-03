@@ -27,10 +27,13 @@ namespace Loaned_PC_Tracker_Client {
         public string UserPCSerial { get; set; }
         public string Ticket { get; set; }
         public bool CheckedOut { get; set; }
+        public new int PacketLength {
+            get { return CreateDataStream().Length; }
+        }
 
         // Default Constructor
         public PCPacket() {
-            Identifier = DataIdentifier.Laptop;
+            Identifier = DataIdentifier.Message;
             UserName = null;
         }
 

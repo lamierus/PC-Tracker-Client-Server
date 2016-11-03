@@ -12,11 +12,14 @@ namespace Loaned_PC_Tracker_Client {
 
     public class NamePacket : Packet {
         public string Name { get; set; }
+        public new int PacketLength {
+            get { return CreateDataStream().Length; }
+        }
 
         // Default Constructor
         public NamePacket() {
             Identifier = DataIdentifier.Null;
-            Name = null;
+            Name = string.Empty;
         }
 
         public NamePacket(string name) {
@@ -30,7 +33,7 @@ namespace Loaned_PC_Tracker_Client {
 
         public void ParsePacket(byte[] dataStream) {
             // Read the data identifier from the beginning of the stream (4 bytes)
-            Identifier = DataIdentifier.LogIn;
+            Identifier = (DataIdentifier)BitConverter.ToInt32(dataStream, 0);
 
             // Read the length of the name (4 bytes)
             int nameLength = BitConverter.ToInt32(dataStream, 4);

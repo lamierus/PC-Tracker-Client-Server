@@ -319,19 +319,15 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="parameter"></param>
         private void ConnectClient(object parameter) {
             var serverSocket = parameter as TcpListener;
-            var clientSocket = default(TcpClient);
+            var clientSocket = new TcpClient();
             while (true) {
                 try {
                     clientSocket = serverSocket.AcceptTcpClient();
                     Client newClient = new Client(clientSocket);
-                    //newClient.startClient(clientSocket);
                     ClientList.Add(newClient);
                     UpdateStatus("Client " + newClient.UserName + " connected!");
-                    SendSitesToClient(newClient);
-                } catch (SocketException ex) {
-                    //UpdateStatus(" >> Something Happened!! ");
-                    //UpdateStatus(ex.Message.ToString());
-                    //clientSocket.Close();
+                    //SendSitesToClient(newClient);
+                } catch (Exception ex) {
                     break;
                 }
             }

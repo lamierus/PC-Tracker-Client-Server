@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Loaned_PC_Tracker_Client {
     public class NumberPacket : Packet {
@@ -10,12 +11,12 @@ namespace Loaned_PC_Tracker_Client {
 
         // Default Constructor
         public NumberPacket() {
-            Identifier = DataIdentifier.Message;
+            Identifier = DataIdentifier.Number;
             Number = 0;
         }
 
         public NumberPacket(int numberToSend) {
-            Identifier = DataIdentifier.Message;
+            Identifier = DataIdentifier.Number;
             Number = numberToSend;
         }
 
@@ -25,7 +26,7 @@ namespace Loaned_PC_Tracker_Client {
 
         public void GetPacket(byte[] dataStream) {
             // Read the data identifier from the beginning of the stream (4 bytes)
-            Identifier = DataIdentifier.Message;
+            Identifier = DataIdentifier.Number;
 
             // Read the Number field (4 bytes)
             Number = BitConverter.ToInt32(dataStream, 4);
@@ -41,6 +42,8 @@ namespace Loaned_PC_Tracker_Client {
             // Add the number
             if (Number != 0)
                 dataStream.AddRange(BitConverter.GetBytes(Number));
+
+            dataStream.AddRange(Encoding.UTF8.GetBytes(";"));
 
             return dataStream.ToArray();
         }

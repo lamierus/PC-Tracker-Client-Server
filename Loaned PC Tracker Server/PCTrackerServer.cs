@@ -349,11 +349,11 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         private void SendSitesToClient(Client client) {
-            NumberPacket numSites = new NumberPacket(siteList.Count);
-            client.SendPacketToClient(numSites);
-            foreach(Site site in siteList) {
-                client.SendPacketToClient(new NamePacket(site.Name));
-            }
+            //NumberPacket numSites = new NumberPacket(siteList.Count);
+            //client.SendPacketToClient(numSites);
+            //foreach(Site site in siteList) {
+                client.SendUDPToClient(siteList);
+            //}
         }
 
         /// <summary>

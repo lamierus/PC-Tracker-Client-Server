@@ -18,12 +18,12 @@ namespace Loaned_PC_Tracker_Server {
 
         // Default Constructor
         public NamePacket() {
-            Identifier = DataIdentifier.Null;
+            Identifier = DataIdentifier.Name;
             Name = string.Empty;
         }
 
         public NamePacket(string name) {
-            Identifier = DataIdentifier.LogIn;
+            Identifier = DataIdentifier.Name;
             Name = name;
         }
 
@@ -61,6 +61,8 @@ namespace Loaned_PC_Tracker_Server {
             // Add the name
             if (Name != null)
                 dataStream.AddRange(Encoding.UTF8.GetBytes(Name));
+
+            dataStream.AddRange(Encoding.UTF8.GetBytes(";"));
 
             return dataStream.ToArray();
         }

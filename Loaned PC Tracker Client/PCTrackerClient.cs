@@ -116,16 +116,21 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_DoWork(object sender, DoWorkEventArgs e) {
-            byte[] InStream = new byte[10025];
+            
+            byte[] inStream = new byte[10025];
             try {
-                NetworkStream networkStream = ClientSocket.GetStream();
-                networkStream.Read(InStream, 0, ClientSocket.ReceiveBufferSize);
-                NumberPacket numSites = new NumberPacket(InStream);
-                for(int i = 0; i < numSites.Number; i++) {
-                    networkStream.Read(InStream, 0, ClientSocket.ReceiveBufferSize);
-                    NamePacket receivedPacket = new NamePacket(InStream);
-                    siteList.Add(receivedPacket.Name);
-                }
+                UdpClient stream = new UdpClient(ClientSocket.Client.AddressFamily);
+                IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(Server), 11000);
+                //NetworkStream networkStream = ClientSocket.GetStream();
+                //networkStream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
+                //NumberPacket numSites = new NumberPacket(inStream);
+                //for(int i = 0; i < numSites.Number; i++) {
+                    inStream = stream.Receive(ref endPoint);
+                    //networkStream.Read(InStream, 0, ClientSocket.ReceiveBufferSize);
+                    Packet pack = new Packet();
+                    //NamePacket receivedPacket = new NamePacket(InStream);
+                    //siteList.Add(receivedPacket.Name);
+                //}
             } catch (Exception ex) {
                 //Console.WriteLine(" >> " + ex.Message.ToString());
             }

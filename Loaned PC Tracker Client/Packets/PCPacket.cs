@@ -33,7 +33,7 @@ namespace Loaned_PC_Tracker_Client {
 
         // Default Constructor
         public PCPacket() {
-            Identifier = DataIdentifier.Message;
+            Identifier = DataIdentifier.Laptop;
             UserName = null;
         }
 
@@ -258,6 +258,8 @@ namespace Loaned_PC_Tracker_Client {
                 dataStream.AddRange(Encoding.UTF8.GetBytes(Ticket));
 
             dataStream.AddRange(BitConverter.GetBytes(CheckedOut));
+
+            dataStream.AddRange(Encoding.UTF8.GetBytes(";"));
 
             return dataStream.ToArray();
         }

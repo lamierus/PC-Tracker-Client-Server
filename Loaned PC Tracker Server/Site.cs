@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Loaned_PC_Tracker_Server {
-    class Site {
+    public class Site {
         public List<Laptop> AvailableHotswaps;
         public List<Laptop> CheckedOutHotswaps;
         public List<Laptop> AvailableLoaners;

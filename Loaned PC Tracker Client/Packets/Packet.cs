@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Loaned_PC_Tracker_Client {
     public class Packet {
@@ -18,6 +19,8 @@ namespace Loaned_PC_Tracker_Client {
 
             // Add the dataIdentifier
             dataStream.AddRange(BitConverter.GetBytes((int)Identifier));
+
+            dataStream.AddRange(Encoding.UTF8.GetBytes(";"));
 
             return dataStream.ToArray();
         }

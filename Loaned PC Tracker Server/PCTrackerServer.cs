@@ -328,7 +328,7 @@ namespace Loaned_PC_Tracker_Server {
                     UpdateStatus("Client " + newClient.UserName + " connected!");
                     SendSitesToClient(newClient);
                 } catch (Exception ex) {
-                    break;
+
                 }
             }
         }
@@ -349,11 +349,23 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         private void SendSitesToClient(Client client) {
-            //NumberPacket numSites = new NumberPacket(siteList.Count);
-            //client.SendPacketToClient(numSites);
-            //foreach(Site site in siteList) {
-                client.SendUDPToClient(siteList);
-            //}
+            UpdateStatus("sending sites to: " + client.UserName);
+            UpdateStatus(Environment.NewLine);
+            byte[][] serializedData = new byte[siteList.Count][];
+            foreach(Site site in siteList) {
+                int index = siteList.IndexOf(site);
+                serializedData[index] = new byte[site.Name.Length];
+                serializedData[index] = SerializeString(site.Name);
+            }
+            List<byte> fullDataStream = new List<byte>();
+            foreach (byte[] array in serializedData) {
+                fullDataStream.AddRange(array);
+            }
+            client.StreamDataToClient(fullDataStream.ToArray());
+        }
+
+        private byte[] SerializeString(string s) {
+            return Encoding.UTF8.GetBytes(s).Union(Encoding.UTF8.GetBytes(";")).ToArray();
         }
 
         /// <summary>

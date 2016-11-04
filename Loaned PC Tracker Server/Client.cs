@@ -63,24 +63,16 @@ namespace Loaned_PC_Tracker_Server {
             return receivedPacket;
         }
 
-        public void SendUDPToClient(List<Site> listToSend) {
-            byte[] dataStream = CreateUDPStream(listToSend);
-
+        public void StreamDataToClient(byte[] dataToSend) {
             try {
-                UdpClient udp = new UdpClient(ClientSocket.Client.AddressFamily);
-                udp.Send(dataStream, dataStream.Length);
+                NetworkStream outStream = ClientSocket.GetStream();
+                outStream.Write(dataToSend, 0, dataToSend.Length);
+                outStream.Flush();
             } catch {
 
             }
         }
 
-        private byte[] CreateUDPStream(object obj) {
-            List<byte> dataStream = new List<byte>();
-
-            dataStream.AddRange(Encoding.UTF8.GetBytes(obj.ToString()));
-
-            return dataStream.ToArray();
-        }
 
         /// <summary>
         ///     this is the function that takes care of receiving the packets from the different users,

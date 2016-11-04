@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Loaned_PC_Tracker_Client {
     public partial class PCTrackerClient : Form {
@@ -119,21 +121,21 @@ namespace Loaned_PC_Tracker_Client {
             
             byte[] inStream = new byte[10025];
             try {
-                UdpClient stream = new UdpClient(ClientSocket.Client.AddressFamily);
-                IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(Server), 11000);
-                //NetworkStream networkStream = ClientSocket.GetStream();
-                //networkStream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
-                //NumberPacket numSites = new NumberPacket(inStream);
-                //for(int i = 0; i < numSites.Number; i++) {
-                    inStream = stream.Receive(ref endPoint);
-                    //networkStream.Read(InStream, 0, ClientSocket.ReceiveBufferSize);
-                    Packet pack = new Packet();
-                    //NamePacket receivedPacket = new NamePacket(InStream);
-                    //siteList.Add(receivedPacket.Name);
-                //}
+                ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
+                List<string> sites = DeserializeStringStream(inStream);
+                foreach(string s in sites) {
+                    siteList.Add(s);
+                }
             } catch (Exception ex) {
+                bgwLoadSites.ReportProgress(0, ex.Message);
                 //Console.WriteLine(" >> " + ex.Message.ToString());
             }
+        }
+
+        private List<string> DeserializeStringStream(byte[] stream) {
+            string stringStream = Encoding.UTF8.GetString(stream);
+            string[] splitStream = stringStream.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            return splitStream.ToList();
         }
 
         /// <summary>
@@ -142,6 +144,7 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_ProgressChanged(object sender, ProgressChangedEventArgs e) {
+            UpdateStatus((string)e.UserState);
             if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
             }

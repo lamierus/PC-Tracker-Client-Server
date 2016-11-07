@@ -16,7 +16,6 @@ using System.Net.Sockets;
 namespace Loaned_PC_Tracker_Server {
     public partial class PCTrackerServerForm : Form {
 
-        private delegate void StringParameterDelegate(string value);
         private TcpListener serverSocket = new TcpListener(IPAddress.Any, 8888);
         private Thread AcceptClients;
         private List<Site> siteList = new List<Site>();
@@ -31,11 +30,28 @@ namespace Loaned_PC_Tracker_Server {
         private int ProgressMax;
         private bool Changed;
         private bool WindowDrawn;
+        private List<Client> ClientList = new List<Client>();
+        private List<Thread> ClientThreadList = new List<Thread>();
 
-        public List<Client> ClientList = new List<Client>();
+        private delegate void StringParameterDelegate(string value);
 
         public PCTrackerServerForm() {
             InitializeComponent();
+        }
+
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="message"></param>
+        public void UpdateStatus(string message) {
+            if (InvokeRequired) {
+                // We're not in the UI thread, so we need to call BeginInvoke
+                BeginInvoke(new StringParameterDelegate(UpdateStatus), new object[] { message });
+                return;
+            }
+            // Must be on the UI thread if we've got this far
+            tbLog.AppendText(message);
+            tbLog.AppendText(Environment.NewLine);
         }
 
         /// <summary>
@@ -97,8 +113,7 @@ namespace Loaned_PC_Tracker_Server {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
             }
             ProgressBarForm.updateProgress(e.ProgressPercentage);
-            tbLog.AppendText((string)e.UserState);
-            tbLog.AppendText(Environment.NewLine);
+            UpdateStatus((string)e.UserState);
         }
 
         /// <summary>
@@ -109,8 +124,7 @@ namespace Loaned_PC_Tracker_Server {
         private void bgwLoadSites_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             ProgressBarForm.Close();
             foreach (Site site in siteList) {
-                tbLog.AppendText("Loading PCs for " + site.Name + "...");
-                tbLog.AppendText(Environment.NewLine);
+                UpdateStatus("Loading PCs for " + site.Name + "...");
                 bgwLoadPCs.RunWorkerAsync(site);
                 ProgressBarForm = new LoadingProgress("Loading PC Lists");
                 ProgressBarForm.ShowDialog();
@@ -200,8 +214,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            tbLog.AppendText((string)e.UserState);
-            tbLog.AppendText(Environment.NewLine);
+            UpdateStatus((string)e.UserState);
 
             if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
@@ -305,8 +318,7 @@ namespace Loaned_PC_Tracker_Server {
         /// </summary>
         private void openConnection() {
             serverSocket.Start();
-            tbLog.AppendText(" >> Server Started");
-            tbLog.AppendText(Environment.NewLine);
+            UpdateStatus(" >> Server Started");
 
             AcceptClients = new Thread(ConnectClient);
             AcceptClients.Start(serverSocket);
@@ -333,24 +345,12 @@ namespace Loaned_PC_Tracker_Server {
             }
         }
 
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="message"></param>
-        private void UpdateStatus(string message) {
-            if (InvokeRequired) {
-                // We're not in the UI thread, so we need to call BeginInvoke
-                BeginInvoke(new StringParameterDelegate(UpdateStatus), new object[] { message });
-                return;
-            }
-            // Must be on the UI thread if we've got this far
-            tbLog.AppendText(message);
-            tbLog.AppendText(Environment.NewLine);
-        }
-
         private void SendSitesToClient(Client client) {
             UpdateStatus("sending sites to: " + client.UserName);
-            UpdateStatus(Environment.NewLine);
+
+            //NumberPacket numSites = new NumberPacket(siteList.Count);
+            //client.SendPacketToClient(numSites);
+
             byte[][] serializedData = new byte[siteList.Count][];
             foreach(Site site in siteList) {
                 int index = siteList.IndexOf(site);
@@ -367,6 +367,10 @@ namespace Loaned_PC_Tracker_Server {
         private byte[] SerializeString(string s) {
             return Encoding.UTF8.GetBytes(s).Union(Encoding.UTF8.GetBytes(";")).ToArray();
         }
+        
+        private void OpenUpdateStream(object parameter) {
+            var client = parameter as Client;
+        }
 
         /// <summary>
         ///     sends out the broadcasted chat or system message to each client that is connected.
@@ -375,7 +379,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="flag"></param>
         public void Broadcast(PCPacket packet, bool flag = true) {
             foreach (Client client in ClientList) {
-                client.SendPacketToClient(packet);
+
             }
         }
 
@@ -395,8 +399,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="hotswaps"></param>
         private void SaveChanges() {
             foreach (Site site in siteList) {
-                tbLog.AppendText("Saving " + site.Name + "'s PC lists");
-                tbLog.AppendText(Environment.NewLine);
+                UpdateStatus("Saving " + site.Name + "'s PC lists");
                 bgwSaveChanges.RunWorkerAsync(site);
                 ProgressBarForm = new LoadingProgress("Saving PC Lists");
                 ProgressBarForm.ShowDialog();
@@ -467,8 +470,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwSaveChanges_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            tbLog.AppendText((string)e.UserState);
-            tbLog.AppendText(Environment.NewLine);
+            UpdateStatus((string)e.UserState);
             if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
             }
@@ -503,8 +505,12 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="e"></param>
         private void PCTrackerServerForm_Closing(object sender, FormClosingEventArgs e) {
             excelApp.Quit();
-            //AcceptClients.Interrupt();
+            AcceptClients.Interrupt();
             serverSocket.Stop();
+        }
+
+        private void testBroadcastToolStripMenuItem_Click(object sender, EventArgs e) {
+            
         }
     }
 }

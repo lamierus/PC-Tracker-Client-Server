@@ -23,13 +23,11 @@ namespace Loaned_PC_Tracker_Client {
         };
         private LoadingProgress ProgressBarForm;
         private int ProgressMax;
-        private bool Changed;
         private bool WindowLoaded;
         private TcpClient ClientSocket = new TcpClient() {
             NoDelay = true,
         };
-        private NetworkStream ServerStream;
-        private PCPacket ReceivePacket;
+        private delegate void StringParameterDelegate(string value);
 
         public PCTrackerClient() {
             InitializeComponent();
@@ -53,6 +51,8 @@ namespace Loaned_PC_Tracker_Client {
                     if (result == DialogResult.OK) {
                         Server = connectTo.ReturnAddress;
                         numRetries = connectTo.ReturnRetries;
+                    } else {
+                        Close();
                     }
                 }
                 ConnectToServer(numRetries);
@@ -91,7 +91,13 @@ namespace Loaned_PC_Tracker_Client {
             }
         }
 
-        private void UpdateStatus(string message) {
+        public void UpdateStatus(string message) {
+            if (InvokeRequired) {
+                // We're not in the UI thread, so we need to call BeginInvoke
+                BeginInvoke(new StringParameterDelegate(UpdateStatus), new object[] { message });
+                return;
+            }
+            // Must be on the UI thread if we've got this far
             tbConnectionStatus.AppendText(message);
             tbConnectionStatus.AppendText(Environment.NewLine);
         }
@@ -121,6 +127,8 @@ namespace Loaned_PC_Tracker_Client {
             
             byte[] inStream = new byte[10025];
             try {
+                //ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
+                //ProgressMax = DeserializeIntStream(inStream);
                 ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
                 List<string> sites = DeserializeStringStream(inStream);
                 foreach(string s in sites) {
@@ -128,7 +136,6 @@ namespace Loaned_PC_Tracker_Client {
                 }
             } catch (Exception ex) {
                 bgwLoadSites.ReportProgress(0, ex.Message);
-                //Console.WriteLine(" >> " + ex.Message.ToString());
             }
         }
 
@@ -136,6 +143,11 @@ namespace Loaned_PC_Tracker_Client {
             string stringStream = Encoding.UTF8.GetString(stream);
             string[] splitStream = stringStream.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             return splitStream.ToList();
+        }
+
+        private int DeserializeIntStream(byte[] stream) {
+            int intStream = BitConverter.ToInt32(stream, 0);
+            return intStream;
         }
 
         /// <summary>
@@ -164,16 +176,7 @@ namespace Loaned_PC_Tracker_Client {
             btnSetDefaultSite.Enabled = false;
 
             ProgressBarForm.Close();
-        }
-        
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="siteName"></param>
-        /// <returns></returns>
-        private string SetPCFileName(string siteName) {
-            string[] splitSelection = siteName.Split(' ');
-            return splitSelection[0] + ".xlsx";
+            bgwAwaitBroadcasts.RunWorkerAsync();
         }
 
         /// <summary>
@@ -182,11 +185,14 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void cbSiteChooser_SelectedIndexChanged(object sender, EventArgs e) {
-            //PCFileName = SetPCFileName((string)cbSiteChooser.SelectedItem);
-            rbHidden.Checked = true;
-            btnSetDefaultSite.Enabled = true;
-            CurrentlyAvailable.Clear();
-            CheckedOut.Clear();
+            if (cbSiteChooser.SelectedIndex != cbSiteChooser.FindString(GetDefaultSite(ProgramKey))) {
+                rbHidden.Checked = true;
+                btnSetDefaultSite.Enabled = true;
+                CurrentlyAvailable.Clear();
+                CheckedOut.Clear();
+            } else {
+                btnSetDefaultSite.Enabled = false;
+            }
         }
 
         /// <summary>
@@ -196,8 +202,6 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="e"></param>
         private void btnSetDefaultSite_Click(object sender, EventArgs e) {
             SetDefaultSite(ProgramKey);
-            int index = 0;// cbSiteChooser.FindString(PCFileName.Split('.')[0]);
-            cbSiteChooser.SelectedIndex = index;
             btnSetDefaultSite.Enabled = false;
         }
 
@@ -240,7 +244,7 @@ namespace Loaned_PC_Tracker_Client {
         private void rbLoaner_CheckedChanged(object sender, EventArgs e) {
             RadioButton sent = sender as RadioButton;
             if (sent.Checked) {
-                if (Changed) {
+                /*if (Changed) {
                     using (var form = new ConfirmChanges()) {
                         var result = form.ShowDialog();
                         if (result == DialogResult.OK) {
@@ -248,10 +252,10 @@ namespace Loaned_PC_Tracker_Client {
                         }
                     }
                     Changed = false;
-                }
+                }*/
                 CurrentlyAvailable.Clear();
                 CheckedOut.Clear();
-                AccessLoanedPCData(((string)cbSiteChooser.SelectedItem).Split(' ')[0], false);
+                AccessLoanedPCData((string)cbSiteChooser.SelectedItem, false);
             }
         }
 
@@ -263,7 +267,7 @@ namespace Loaned_PC_Tracker_Client {
         private void rbHotSwap_CheckedChanged(object sender, EventArgs e) {
             RadioButton sent = sender as RadioButton;
             if (sent.Checked) {
-                if (Changed) {
+                /*if (Changed) {
                     using (var form = new ConfirmChanges()) {
                         var result = form.ShowDialog();
                         if (result == DialogResult.OK) {
@@ -271,10 +275,10 @@ namespace Loaned_PC_Tracker_Client {
                         }
                     }
                     Changed = false;
-                }
+                }*/
                 CurrentlyAvailable.Clear();
                 CheckedOut.Clear();
-                AccessLoanedPCData(((string)cbSiteChooser.SelectedItem).Split(' ')[0], true);
+                AccessLoanedPCData((string)cbSiteChooser.SelectedItem, true);
             }
         }
 
@@ -284,10 +288,16 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="siteName"></param>
         /// <param name="hotswaps"></param>
         private void AccessLoanedPCData(string siteName, bool hotswaps) {
-            
-            //bgwLoadPCs.RunWorkerAsync(localFile);
-            //ProgressBarForm = new LoadingProgress("Loading " + type + " List");
-            //ProgressBarForm.ShowDialog();
+            string type = string.Empty;
+            if (hotswaps) {
+                type = "Hotswaps";
+            } else {
+                type = "Loaners";
+            }
+
+            bgwLoadPCs.RunWorkerAsync(hotswaps);
+            ProgressBarForm = new LoadingProgress("Loading " + type + " List");
+            ProgressBarForm.ShowDialog();
         }
 
         /// <summary>
@@ -296,40 +306,9 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_DoWork(object sender, DoWorkEventArgs e) {
-            string fileName = (string)e.Argument;
-            Excel.Workbook workbook = excelApp.Workbooks.Open(fileName);
-            Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
+            //Laptop newLaptop;
 
-            int lastRow = getMaxRow(currentSheet);
-            int lastCol = getMaxCol(currentSheet);
-            ProgressMax = lastRow;
-
-            Laptop newLaptop;
-            Laptop prevLaptop = new Laptop();
-
-            for (int index = 2; index <= lastRow; index++) {
-                // this array holds all of the information from each line of the excel sheet
-                Array laptopValues = (Array)currentSheet.get_Range("A" + index.ToString(), ColumnNumToString(lastCol) + index.ToString()).Cells.Value;
-                // I have to run the check null on each of these parsed cells, 
-                // due to being brought in from an excel sheet with possible blank cells
-                newLaptop = new Laptop() {
-                    Number = intCheckNull(laptopValues.GetValue(1, 1)),
-                    Serial = stringCheckNull(laptopValues.GetValue(1, 2)),
-                    Brand = stringCheckNull(laptopValues.GetValue(1, 3)),
-                    Model = stringCheckNull(laptopValues.GetValue(1, 4)),
-                    Warranty = stringCheckNull(laptopValues.GetValue(1, 5)),
-                    Username = stringCheckNull(laptopValues.GetValue(1, 6)),
-
-                    TicketNumber = stringCheckNull(laptopValues.GetValue(1, 8)),
-                    CheckedOut = boolCheckNull(laptopValues.GetValue(1, 9))
-                };
-                //this verifies that the newly created laptop is not a copy of the previous one
-                if (newLaptop != prevLaptop) {
-                    bgwLoadPCs.ReportProgress(index, newLaptop);
-                    prevLaptop = newLaptop;
-                }
-            }
-            workbook.Close();
+            //bgwLoadPCs.ReportProgress(index, newLaptop);
         }
 
         /// <summary>
@@ -338,11 +317,11 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            Laptop sent = e.UserState as Laptop;
-            if (sent.CheckedOut) {
-                CheckedOut.Add(sent);
+            Laptop PC = e.UserState as Laptop;
+            if (PC.CheckedOut) {
+                CheckedOut.Add(PC);
             } else {
-                CurrentlyAvailable.Add(sent);
+                CurrentlyAvailable.Add(PC);
             }
 
             if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
@@ -478,7 +457,7 @@ namespace Loaned_PC_Tracker_Client {
                         checkOutPC = form.ReturnPC;
                         CurrentlyAvailable.Remove(checkOutPC);
                         CheckedOut.Add(checkOutPC);
-                        Changed = true;
+                        //Changed = true;
                     }
                 }
             }
@@ -498,7 +477,7 @@ namespace Loaned_PC_Tracker_Client {
                         checkInPC = form.ReturnPC;
                         CheckedOut.Remove(checkInPC);
                         CurrentlyAvailable.Add(checkInPC);
-                        Changed = true;
+                        //Changed = true;
                     }
                 }
             }
@@ -517,7 +496,7 @@ namespace Loaned_PC_Tracker_Client {
                     CurrentlyAvailable.Remove(editedPC);
                     editedPC = form.ReturnPC;
                     CurrentlyAvailable.Add(editedPC);
-                    Changed = true;
+                    //Changed = true;
                 }
             }
         }
@@ -532,7 +511,7 @@ namespace Loaned_PC_Tracker_Client {
                 var result = form.ShowDialog();
                 if (result == DialogResult.OK) {
                     CurrentlyAvailable.Add(form.ReturnPC);
-                    Changed = true;
+                    //Changed = true;
                 }
             }
         }
@@ -548,7 +527,7 @@ namespace Loaned_PC_Tracker_Client {
                 var result = form.ShowDialog();
                 if (result == DialogResult.OK) {
                     CurrentlyAvailable.Remove(PCtoRemove);
-                    Changed = true;
+                    //Changed = true;
                 }
             }
         }
@@ -630,7 +609,7 @@ namespace Loaned_PC_Tracker_Client {
         private void bgwSaveChanges_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             CurrentlyAvailable.ResetBindings();
             CheckedOut.ResetBindings();
-            Changed = false;
+            //Changed = false;
 
             ProgressBarForm.Close();
         }
@@ -642,6 +621,10 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="e"></param>
         private void frmPCTracker_Closing(object sender, FormClosingEventArgs e) {
             excelApp.Quit();
+        }
+
+        private void bgwAwaitBroadcasts_DoWork(object sender, DoWorkEventArgs e) {
+            
         }
     }
 }

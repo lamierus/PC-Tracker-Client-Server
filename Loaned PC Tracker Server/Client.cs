@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Collections;
@@ -10,11 +11,14 @@ namespace Loaned_PC_Tracker_Server {
     public class Client {
         static int UserCount { get; set; }
         public string UserName { get; set; }
-        //public PCPacket SendPack = new PCPacket();
+        public string Site { get; set; }
+        public bool Hotswaps { get; set; }
+        public IPAddress IP {
+            get { return ((IPEndPoint)ClientSocket.Client.RemoteEndPoint).Address; }
+        }
 
-        //private byte[] InStream = new byte[10025];
+        //private byte[] InStream;
         private TcpClient ClientSocket;
-        //private Thread ClientThread;
 
         public Client() {
             UserName = "Client #" + UserCount++.ToString();
@@ -31,10 +35,10 @@ namespace Loaned_PC_Tracker_Server {
         /// </summary>
         /// <param name="inClientSocket"></param>
         private bool startClient() {
-            byte[] inStream = new byte[10025];
+            byte[] InStream = new byte[10025];
             try {
-                ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
-                NamePacket handshake = new NamePacket(inStream);
+                ClientSocket.GetStream().Read(InStream, 0, ClientSocket.ReceiveBufferSize);
+                NamePacket handshake = new NamePacket(InStream);
                 if (handshake.Name != string.Empty && handshake.Name != null) {
                     UserName = handshake.Name;
                 } else {
@@ -52,11 +56,11 @@ namespace Loaned_PC_Tracker_Server {
         ///     interpreting them and sending out the correct broadcast messages to the other users.
         /// </summary>
         public PCPacket GetPCPacket() {
-            byte[] inStream = new byte[10025];
+            byte[] InStream = new byte[10025];
             PCPacket receivedPacket = new PCPacket();
             try {
-                ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
-                receivedPacket.GetPacket(inStream);
+                ClientSocket.GetStream().Read(InStream, 0, ClientSocket.ReceiveBufferSize);
+                receivedPacket.GetPacket(InStream);
             } catch (Exception ex) {
                 //Console.WriteLine(" >> " + ex.Message.ToString());
             }
@@ -70,31 +74,6 @@ namespace Loaned_PC_Tracker_Server {
                 outStream.Flush();
             } catch {
 
-            }
-        }
-
-
-        /// <summary>
-        ///     this is the function that takes care of receiving the packets from the different users,
-        ///     interpreting them and sending out the correct broadcast messages to the other users.
-        /// </summary>
-        public void SendPacketToClient(Packet packet) {
-            try {
-                ClientSocket.GetStream().Write(packet.CreateDataStream(), 0, packet.PacketLength);
-            } catch (Exception ex) {
-                //Console.WriteLine(" >> " + ex.Message.ToString());
-            }
-        }
-
-        /// <summary>
-        ///     this is the function that takes care of receiving the packets from the different users,
-        ///     interpreting them and sending out the correct broadcast messages to the other users.
-        /// </summary>
-        public void SendPacketToClient(PCPacket packet) {
-            try {
-                ClientSocket.GetStream().Write(packet.CreateDataStream(), 0, packet.PacketLength);
-            } catch (Exception ex) {
-                //Console.WriteLine(" >> " + ex.Message.ToString());
             }
         }
 

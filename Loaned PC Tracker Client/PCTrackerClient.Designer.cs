@@ -44,6 +44,7 @@
             this.btnEditPC = new System.Windows.Forms.Button();
             this.btnSaveChanges = new System.Windows.Forms.Button();
             this.tbConnectionStatus = new System.Windows.Forms.TextBox();
+            this.bgwAwaitBroadcasts = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAvailable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitDataGridViews)).BeginInit();
             this.splitDataGridViews.Panel1.SuspendLayout();
@@ -167,14 +168,14 @@
             this.dgvCheckedOut.BackgroundColor = System.Drawing.SystemColors.Control;
             this.dgvCheckedOut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvCheckedOut.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.dgvCheckedOut.Location = new System.Drawing.Point(46, 4);
-            this.dgvCheckedOut.MinimumSize = new System.Drawing.Size(288, 298);
+            this.dgvCheckedOut.Location = new System.Drawing.Point(40, 3);
+            this.dgvCheckedOut.MinimumSize = new System.Drawing.Size(288, 288);
             this.dgvCheckedOut.MultiSelect = false;
             this.dgvCheckedOut.Name = "dgvCheckedOut";
             this.dgvCheckedOut.ReadOnly = true;
             this.dgvCheckedOut.RowHeadersVisible = false;
             this.dgvCheckedOut.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvCheckedOut.Size = new System.Drawing.Size(306, 300);
+            this.dgvCheckedOut.Size = new System.Drawing.Size(312, 300);
             this.dgvCheckedOut.TabIndex = 6;
             this.dgvCheckedOut.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCheckedOut_CellClick);
             // 
@@ -311,6 +312,12 @@
             this.tbConnectionStatus.Size = new System.Drawing.Size(183, 60);
             this.tbConnectionStatus.TabIndex = 16;
             // 
+            // bgwAwaitBroadcasts
+            // 
+            this.bgwAwaitBroadcasts.WorkerReportsProgress = true;
+            this.bgwAwaitBroadcasts.WorkerSupportsCancellation = true;
+            this.bgwAwaitBroadcasts.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwAwaitBroadcasts_DoWork);
+            // 
             // PCTrackerClient
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -371,6 +378,7 @@
         private System.ComponentModel.BackgroundWorker bgwLoadPCs;
         private System.ComponentModel.BackgroundWorker bgwSaveChanges;
         private System.Windows.Forms.TextBox tbConnectionStatus;
+        private System.ComponentModel.BackgroundWorker bgwAwaitBroadcasts;
     }
 }
 

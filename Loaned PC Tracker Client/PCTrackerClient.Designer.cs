@@ -77,6 +77,13 @@
             this.bgwSaveChanges.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwSaveChanges_ProgressChanged);
             this.bgwSaveChanges.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwSaveChanges_RunWorkerCompleted);
             // 
+            // bgwAwaitBroadcasts
+            // 
+            this.bgwAwaitBroadcasts.WorkerReportsProgress = true;
+            this.bgwAwaitBroadcasts.WorkerSupportsCancellation = true;
+            this.bgwAwaitBroadcasts.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwAwaitBroadcasts_DoWork);
+            this.bgwAwaitBroadcasts.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwAwaitBroadcasts_RunWorkerCompleted);
+            // 
             // cbSiteChooser
             // 
             this.cbSiteChooser.Anchor = System.Windows.Forms.AnchorStyles.Top;
@@ -93,7 +100,7 @@
             // 
             this.lblAvailable.AutoSize = true;
             this.lblAvailable.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblAvailable.Location = new System.Drawing.Point(78, 75);
+            this.lblAvailable.Location = new System.Drawing.Point(78, 83);
             this.lblAvailable.Name = "lblAvailable";
             this.lblAvailable.Size = new System.Drawing.Size(128, 18);
             this.lblAvailable.TabIndex = 3;
@@ -104,7 +111,7 @@
             this.lblCheckedOut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblCheckedOut.AutoSize = true;
             this.lblCheckedOut.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCheckedOut.Location = new System.Drawing.Point(542, 75);
+            this.lblCheckedOut.Location = new System.Drawing.Point(542, 83);
             this.lblCheckedOut.Name = "lblCheckedOut";
             this.lblCheckedOut.Size = new System.Drawing.Size(95, 18);
             this.lblCheckedOut.TabIndex = 4;
@@ -129,7 +136,7 @@
             this.dgvAvailable.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.dgvAvailable.RowHeadersVisible = false;
             this.dgvAvailable.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvAvailable.Size = new System.Drawing.Size(300, 300);
+            this.dgvAvailable.Size = new System.Drawing.Size(300, 310);
             this.dgvAvailable.TabIndex = 5;
             this.dgvAvailable.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvAvailable_CellClick);
             // 
@@ -138,7 +145,7 @@
             this.splitDataGridViews.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitDataGridViews.Location = new System.Drawing.Point(12, 96);
+            this.splitDataGridViews.Location = new System.Drawing.Point(12, 104);
             this.splitDataGridViews.Name = "splitDataGridViews";
             // 
             // splitDataGridViews.Panel1
@@ -148,7 +155,7 @@
             // splitDataGridViews.Panel2
             // 
             this.splitDataGridViews.Panel2.Controls.Add(this.dgvCheckedOut);
-            this.splitDataGridViews.Size = new System.Drawing.Size(712, 306);
+            this.splitDataGridViews.Size = new System.Drawing.Size(712, 316);
             this.splitDataGridViews.SplitterDistance = 356;
             this.splitDataGridViews.SplitterWidth = 1;
             this.splitDataGridViews.TabIndex = 0;
@@ -168,21 +175,20 @@
             this.dgvCheckedOut.BackgroundColor = System.Drawing.SystemColors.Control;
             this.dgvCheckedOut.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvCheckedOut.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.dgvCheckedOut.Location = new System.Drawing.Point(40, 3);
-            this.dgvCheckedOut.MinimumSize = new System.Drawing.Size(288, 288);
+            this.dgvCheckedOut.Location = new System.Drawing.Point(52, 4);
             this.dgvCheckedOut.MultiSelect = false;
             this.dgvCheckedOut.Name = "dgvCheckedOut";
             this.dgvCheckedOut.ReadOnly = true;
             this.dgvCheckedOut.RowHeadersVisible = false;
             this.dgvCheckedOut.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvCheckedOut.Size = new System.Drawing.Size(312, 300);
+            this.dgvCheckedOut.Size = new System.Drawing.Size(300, 310);
             this.dgvCheckedOut.TabIndex = 6;
             this.dgvCheckedOut.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCheckedOut_CellClick);
             // 
             // btnCheckOut
             // 
             this.btnCheckOut.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnCheckOut.Location = new System.Drawing.Point(340, 100);
+            this.btnCheckOut.Location = new System.Drawing.Point(340, 108);
             this.btnCheckOut.Name = "btnCheckOut";
             this.btnCheckOut.Size = new System.Drawing.Size(55, 50);
             this.btnCheckOut.TabIndex = 9;
@@ -235,7 +241,7 @@
             // btnCheckIn
             // 
             this.btnCheckIn.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnCheckIn.Location = new System.Drawing.Point(340, 155);
+            this.btnCheckIn.Location = new System.Drawing.Point(340, 163);
             this.btnCheckIn.Name = "btnCheckIn";
             this.btnCheckIn.Size = new System.Drawing.Size(55, 50);
             this.btnCheckIn.TabIndex = 10;
@@ -246,7 +252,7 @@
             // btnAddNew
             // 
             this.btnAddNew.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnAddNew.Location = new System.Drawing.Point(340, 295);
+            this.btnAddNew.Location = new System.Drawing.Point(340, 303);
             this.btnAddNew.Name = "btnAddNew";
             this.btnAddNew.Size = new System.Drawing.Size(55, 50);
             this.btnAddNew.TabIndex = 11;
@@ -269,7 +275,7 @@
             // btnRemoveOld
             // 
             this.btnRemoveOld.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnRemoveOld.Location = new System.Drawing.Point(340, 350);
+            this.btnRemoveOld.Location = new System.Drawing.Point(340, 358);
             this.btnRemoveOld.Name = "btnRemoveOld";
             this.btnRemoveOld.Size = new System.Drawing.Size(55, 50);
             this.btnRemoveOld.TabIndex = 13;
@@ -280,7 +286,7 @@
             // btnEditPC
             // 
             this.btnEditPC.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnEditPC.Location = new System.Drawing.Point(340, 240);
+            this.btnEditPC.Location = new System.Drawing.Point(340, 248);
             this.btnEditPC.Name = "btnEditPC";
             this.btnEditPC.Size = new System.Drawing.Size(55, 50);
             this.btnEditPC.TabIndex = 14;
@@ -293,7 +299,7 @@
             this.btnSaveChanges.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSaveChanges.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSaveChanges.Location = new System.Drawing.Point(266, 420);
+            this.btnSaveChanges.Location = new System.Drawing.Point(266, 438);
             this.btnSaveChanges.Name = "btnSaveChanges";
             this.btnSaveChanges.Size = new System.Drawing.Size(200, 23);
             this.btnSaveChanges.TabIndex = 15;
@@ -304,24 +310,18 @@
             // tbConnectionStatus
             // 
             this.tbConnectionStatus.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.tbConnectionStatus.Location = new System.Drawing.Point(12, 12);
+            this.tbConnectionStatus.Location = new System.Drawing.Point(15, 12);
             this.tbConnectionStatus.Multiline = true;
             this.tbConnectionStatus.Name = "tbConnectionStatus";
             this.tbConnectionStatus.ReadOnly = true;
-            this.tbConnectionStatus.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.tbConnectionStatus.Size = new System.Drawing.Size(183, 60);
+            this.tbConnectionStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbConnectionStatus.Size = new System.Drawing.Size(245, 68);
             this.tbConnectionStatus.TabIndex = 16;
-            // 
-            // bgwAwaitBroadcasts
-            // 
-            this.bgwAwaitBroadcasts.WorkerReportsProgress = true;
-            this.bgwAwaitBroadcasts.WorkerSupportsCancellation = true;
-            this.bgwAwaitBroadcasts.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwAwaitBroadcasts_DoWork);
             // 
             // PCTrackerClient
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
-            this.ClientSize = new System.Drawing.Size(734, 462);
+            this.ClientSize = new System.Drawing.Size(734, 472);
             this.Controls.Add(this.tbConnectionStatus);
             this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.btnEditPC);

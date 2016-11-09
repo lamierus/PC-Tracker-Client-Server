@@ -50,8 +50,10 @@ namespace Loaned_PC_Tracker_Server {
                 return;
             }
             // Must be on the UI thread if we've got this far
-            tbLog.AppendText(message);
-            tbLog.AppendText(Environment.NewLine);
+            if (!tbLog.IsDisposed) {
+                tbLog.AppendText(message);
+                tbLog.AppendText(Environment.NewLine);
+            }
         }
 
         /// <summary>
@@ -340,7 +342,8 @@ namespace Loaned_PC_Tracker_Server {
                     UpdateStatus("Client " + newClient.UserName + " connected!");
                     SendSitesToClient(newClient);
                 } catch (Exception ex) {
-
+                    UpdateStatus(ex.Message);
+                    break;
                 }
             }
         }
@@ -365,7 +368,9 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         private byte[] SerializeString(string s) {
-            return Encoding.UTF8.GetBytes(s).Union(Encoding.UTF8.GetBytes(";")).ToArray();
+            string stringToSerialize = s.Insert(s.Length, ";");
+            byte[] serializedString = Encoding.UTF8.GetBytes(stringToSerialize);
+            return serializedString;
         }
         
         private void OpenUpdateStream(object parameter) {
@@ -373,13 +378,15 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     sends out the broadcasted chat or system message to each client that is connected.
+        ///     sends out the broadcast to each client that is connected.
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="flag"></param>
         public void Broadcast(PCPacket packet, bool flag = true) {
-            foreach (Client client in ClientList) {
-
+            byte[] serializedData = new byte[0];
+            //TODO: add code to create the update to be broadcasted to each client
+            foreach (Client c in ClientList) {
+                c.StreamDataToClient(serializedData);
             }
         }
 
@@ -510,7 +517,20 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         private void testBroadcastToolStripMenuItem_Click(object sender, EventArgs e) {
-            
+            string test = "abcdefghijklmnopqrstuvwxyz1234567890-=[]\\',./`ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}|:\"<>?~";
+            byte[] serializedData = SerializeString(test);
+            foreach (Client c in ClientList) {
+                c.StreamDataToClient(serializedData);
+            }
+        }
+
+        private void autoSaveToolStripMenuItem_Click(object sender, EventArgs e) {
+            var sent = sender as ToolStripMenuItem;
+            if (sent.Checked) {
+                sent.Checked = false;
+            } else {
+                sent.Checked = true;
+            }
         }
     }
 }

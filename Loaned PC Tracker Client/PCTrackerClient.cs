@@ -624,7 +624,25 @@ namespace Loaned_PC_Tracker_Client {
         }
 
         private void bgwAwaitBroadcasts_DoWork(object sender, DoWorkEventArgs e) {
-            
+            NetworkStream broadcastStream;
+            byte[] inStream = new byte[10025];
+            while (true) {
+                try {
+                    broadcastStream = ClientSocket.GetStream();
+                    broadcastStream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
+                    List<string> broadcast = DeserializeStringStream(inStream);
+                    foreach (string s in broadcast) {
+                        UpdateStatus(s);
+                    }
+                } catch (Exception ex) {
+                    UpdateStatus(ex.Message);
+                    break;
+                }
+            }
+        }
+
+        private void bgwAwaitBroadcasts_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
+            UpdateStatus("Disconnected from server!");
         }
     }
 }

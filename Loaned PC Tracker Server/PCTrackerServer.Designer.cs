@@ -1,5 +1,5 @@
 ﻿namespace Loaned_PC_Tracker_Server {
-    partial class PCTrackerServerForm {
+    public partial class PCTrackerServerForm {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -34,6 +34,7 @@
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testBroadcastToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoSaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testSerialzePCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -111,7 +112,8 @@
             // 
             this.otherToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testBroadcastToolStripMenuItem,
-            this.autoSaveToolStripMenuItem});
+            this.autoSaveToolStripMenuItem,
+            this.testSerialzePCToolStripMenuItem});
             this.otherToolStripMenuItem.Name = "otherToolStripMenuItem";
             this.otherToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
             this.otherToolStripMenuItem.Text = "Other";
@@ -119,7 +121,7 @@
             // testBroadcastToolStripMenuItem
             // 
             this.testBroadcastToolStripMenuItem.Name = "testBroadcastToolStripMenuItem";
-            this.testBroadcastToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.testBroadcastToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.testBroadcastToolStripMenuItem.Text = "Test Broadcast";
             this.testBroadcastToolStripMenuItem.Click += new System.EventHandler(this.testBroadcastToolStripMenuItem_Click);
             // 
@@ -129,9 +131,16 @@
             this.autoSaveToolStripMenuItem.CheckOnClick = true;
             this.autoSaveToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.autoSaveToolStripMenuItem.Name = "autoSaveToolStripMenuItem";
-            this.autoSaveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.autoSaveToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
             this.autoSaveToolStripMenuItem.Text = "Auto Save";
             this.autoSaveToolStripMenuItem.Click += new System.EventHandler(this.autoSaveToolStripMenuItem_Click);
+            // 
+            // testSerialzePCToolStripMenuItem
+            // 
+            this.testSerialzePCToolStripMenuItem.Name = "testSerialzePCToolStripMenuItem";
+            this.testSerialzePCToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.testSerialzePCToolStripMenuItem.Text = "Test serialze PC";
+            this.testSerialzePCToolStripMenuItem.Click += new System.EventHandler(this.testSerialzePCToolStripMenuItem_Click);
             // 
             // PCTrackerServerForm
             // 
@@ -166,6 +175,7 @@
         private System.Windows.Forms.ToolStripMenuItem otherToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testBroadcastToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem autoSaveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testSerialzePCToolStripMenuItem;
     }
 }
 

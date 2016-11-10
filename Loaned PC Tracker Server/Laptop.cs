@@ -40,13 +40,9 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         public byte[] SerializeLaptop() {
-            byte[] seperator = BitConverter.GetBytes(';');
+            byte[] seperator = BitConverter.GetBytes(',');
             List<byte> serializedPC = new List<byte>();
-
-            /*if (Number != 0)
-                serializedPC.AddRange(BitConverter.GetBytes(Number));
-            else
-                serializedPC.AddRange(BitConverter.GetBytes(0));*/
+            
             serializedPC.AddRange(Encoding.UTF8.GetBytes(Number.ToString()));
 
             serializedPC.AddRange(seperator);
@@ -95,19 +91,19 @@ namespace Loaned_PC_Tracker_Server {
 
             //serializedPC.AddRange(BitConverter.GetBytes(CheckedOut));
             serializedPC.AddRange(Encoding.UTF8.GetBytes(CheckedOut.ToString()));
-
-            serializedPC.AddRange(seperator);
+            
+            serializedPC.AddRange(BitConverter.GetBytes(';'));
 
 
             return serializedPC.ToArray();
         }
 
         public Laptop DeserializeLaptop(byte[] serializedPC) {
-            byte[] seperator = BitConverter.GetBytes(';');
+            char[] seperator = new char[] { ',' };
             Laptop deserializedPC = new Laptop();
 
             string dataString = Encoding.UTF8.GetString(serializedPC);
-            string[] splitString = dataString.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] splitString = dataString.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
 
             int parsedNum;
             if (int.TryParse(splitString[0], out parsedNum)) {

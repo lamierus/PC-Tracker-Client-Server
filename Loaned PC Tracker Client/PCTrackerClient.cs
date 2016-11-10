@@ -135,7 +135,8 @@ namespace Loaned_PC_Tracker_Client {
                     siteList.Add(s);
                 }
             } catch (Exception ex) {
-                bgwLoadSites.ReportProgress(0, ex.Message);
+                UpdateStatus(ex.Message);
+                //bgwLoadSites.ReportProgress(0, ex.Message);
             }
         }
 
@@ -144,19 +145,14 @@ namespace Loaned_PC_Tracker_Client {
             string[] splitStream = stringStream.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             return splitStream.ToList();
         }
-
-        private int DeserializeIntStream(byte[] stream) {
-            int intStream = BitConverter.ToInt32(stream, 0);
-            return intStream;
-        }
-
+        
         /// <summary>
         ///     
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            UpdateStatus((string)e.UserState);
+            //UpdateStatus((string)e.UserState);
             if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
             }
@@ -295,7 +291,7 @@ namespace Loaned_PC_Tracker_Client {
                 type = "Loaners";
             }
 
-            bgwLoadPCs.RunWorkerAsync(hotswaps);
+            bgwLoadPCs.RunWorkerAsync(type);
             ProgressBarForm = new LoadingProgress("Loading " + type + " List");
             ProgressBarForm.ShowDialog();
         }
@@ -306,9 +302,36 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_DoWork(object sender, DoWorkEventArgs e) {
-            //Laptop newLaptop;
+            var type = e.Argument as string;
+            byte[] inStream = new byte[10025];
+            NetworkStream stream;
+            RequestPCPacket requestPCs = new RequestPCPacket((string)cbSiteChooser.SelectedItem, type);
 
-            //bgwLoadPCs.ReportProgress(index, newLaptop);
+            try {
+                stream = ClientSocket.GetStream();
+                UpdateStatus("Requesting PC's for " + requestPCs.Name);
+                stream.Write(requestPCs.CreateDataStream(), 0, requestPCs.PacketLength);
+                stream.Flush();
+                stream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
+                //List<Laptop> receivedPCs = SplitPCStream(inStream);
+                SplitPCStream(inStream);
+            } catch (Exception ex) {
+                UpdateStatus(ex.Message);
+            }
+            
+        }
+
+        //private List<Laptop> SplitPCStream(byte[] dataStream) {
+        private void SplitPCStream(byte[] dataStream) {
+            var seperator = new char[] { ';' };
+            var stringStream = Encoding.UTF8.GetString(dataStream);
+            var splitStream = stringStream.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
+            //var returnList = new List<Laptop>();
+            foreach (string s in splitStream) {
+                bgwLoadPCs.ReportProgress(0, new Laptop().DeserializeLaptop(s));
+                //returnList.Add(new Laptop().DeserializeLaptop(s));
+            }
+            //return returnList;
         }
 
         /// <summary>

@@ -40,13 +40,9 @@ namespace Loaned_PC_Tracker_Client {
         }
 
         public byte[] SerializeLaptop() {
-            byte[] seperator = BitConverter.GetBytes(';');
+            byte[] seperator = BitConverter.GetBytes(',');
             List<byte> serializedPC = new List<byte>();
 
-            /*if (Number != 0)
-                serializedPC.AddRange(BitConverter.GetBytes(Number));
-            else
-                serializedPC.AddRange(BitConverter.GetBytes(0));*/
             serializedPC.AddRange(Encoding.UTF8.GetBytes(Number.ToString()));
 
             serializedPC.AddRange(seperator);
@@ -96,18 +92,46 @@ namespace Loaned_PC_Tracker_Client {
             //serializedPC.AddRange(BitConverter.GetBytes(CheckedOut));
             serializedPC.AddRange(Encoding.UTF8.GetBytes(CheckedOut.ToString()));
 
-            serializedPC.AddRange(seperator);
+            serializedPC.AddRange(BitConverter.GetBytes(';'));
 
 
             return serializedPC.ToArray();
         }
 
         public Laptop DeserializeLaptop(byte[] serializedPC) {
-            byte[] seperator = BitConverter.GetBytes(';');
+            char[] seperator = new char[] { ',' };
             Laptop deserializedPC = new Laptop();
 
             string dataString = Encoding.UTF8.GetString(serializedPC);
-            string[] splitString = dataString.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] splitString = dataString.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
+
+            int parsedNum;
+            if (int.TryParse(splitString[0], out parsedNum)) {
+                deserializedPC.Number = parsedNum;
+            }
+
+            deserializedPC.Serial = splitString[1];
+            deserializedPC.Brand = splitString[2];
+            deserializedPC.Model = splitString[3];
+            deserializedPC.Warranty = splitString[4];
+            deserializedPC.Username = splitString[5];
+            deserializedPC.UserPCSerial = splitString[6];
+            deserializedPC.TicketNumber = splitString[7];
+
+            if (splitString[8].ToLower() == "true") {
+                deserializedPC.CheckedOut = true;
+            } else {
+                deserializedPC.CheckedOut = false;
+            }
+
+            return deserializedPC;
+        }
+
+        public Laptop DeserializeLaptop(string serializedPC) {
+            char[] seperator = new char[] { ',' };
+            Laptop deserializedPC = new Laptop();
+            
+            string[] splitString = serializedPC.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
 
             int parsedNum;
             if (int.TryParse(splitString[0], out parsedNum)) {

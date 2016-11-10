@@ -155,11 +155,12 @@ namespace Loaned_PC_Tracker_Server {
                 newLaptop = getNewLaptop(index, ref currentSheet);
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
-                    if (newLaptop.CheckedOut) {
+                    /*if (newLaptop.CheckedOut) {
                         site.CheckedOutLoaners.Add(newLaptop);
                     } else {
                         site.AvailableLoaners.Add(newLaptop);
-                    }
+                    }*/
+                    site.Loaners.Add(newLaptop);
                     bgwLoadPCs.ReportProgress(index, newLaptop.Serial);
                     prevLaptop = newLaptop;
                 }
@@ -178,11 +179,12 @@ namespace Loaned_PC_Tracker_Server {
                 newLaptop = getNewLaptop(index, ref currentSheet);
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
-                    if (newLaptop.CheckedOut) {
+                    /*if (newLaptop.CheckedOut) {
                         site.CheckedOutHotswaps.Add(newLaptop);
                     } else {
                         site.AvailableHotswaps.Add(newLaptop);
-                    }
+                    }*/
+                    site.Hotswaps.Add(newLaptop);
                     bgwLoadPCs.ReportProgress(index, newLaptop.Serial);
                     prevLaptop = newLaptop;
                 }
@@ -337,7 +339,7 @@ namespace Loaned_PC_Tracker_Server {
             while (true) {
                 try {
                     clientSocket = serverSocket.AcceptTcpClient();
-                    Client newClient = new Client(clientSocket);
+                    Client newClient = new Client(clientSocket, this);
                     ClientList.Add(newClient);
                     UpdateStatus("Client " + newClient.UserName + " connected!");
                     SendSitesToClient(newClient);
@@ -364,7 +366,7 @@ namespace Loaned_PC_Tracker_Server {
             foreach (byte[] array in serializedData) {
                 fullDataStream.AddRange(array);
             }
-            client.StreamDataToClient(fullDataStream.ToArray());
+            client.StreamDataToClient(fullDataStream.ToArray(), this);
         }
 
         private byte[] SerializeString(string s) {
@@ -375,6 +377,22 @@ namespace Loaned_PC_Tracker_Server {
         
         private void OpenUpdateStream(object parameter) {
             var client = parameter as Client;
+            
+        }
+
+        public void SendPCsForSite(Client client, string siteName, string type) {
+            var dataStream = new List<byte>();
+            Site site = siteList.Find(s => Site.Name == siteName);
+            if (type == "Hotswaps") {
+                foreach (Laptop pc in site.Hotswaps) {
+                    dataStream.AddRange(pc.SerializeLaptop());
+                }
+            } else {
+                foreach (Laptop pc in site.Loaners) {
+                    dataStream.AddRange(pc.SerializeLaptop());
+                }
+            }
+            client.StreamDataToClient(dataStream.ToArray(), this);
         }
 
         /// <summary>
@@ -386,7 +404,7 @@ namespace Loaned_PC_Tracker_Server {
             byte[] serializedData = new byte[0];
             //TODO: add code to create the update to be broadcasted to each client
             foreach (Client c in ClientList) {
-                c.StreamDataToClient(serializedData);
+                c.StreamDataToClient(serializedData, this);
             }
         }
 
@@ -520,7 +538,7 @@ namespace Loaned_PC_Tracker_Server {
             string test = "abcdefghijklmnopqrstuvwxyz1234567890-=[]\\',./`ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}|:\"<>?~";
             byte[] serializedData = SerializeString(test);
             foreach (Client c in ClientList) {
-                c.StreamDataToClient(serializedData);
+                c.StreamDataToClient(serializedData, this);
             }
         }
 
@@ -531,6 +549,11 @@ namespace Loaned_PC_Tracker_Server {
             } else {
                 sent.Checked = true;
             }
+        }
+
+        private void testSerialzePCToolStripMenuItem_Click(object sender, EventArgs e) {
+            Laptop test = new Laptop(2, "HP", "123", "456", "expired");
+            byte [] serialzedPC = test.SerializeLaptop();
         }
     }
 }

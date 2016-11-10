@@ -105,7 +105,7 @@
     <Compile Include="LoadingProgress.Designer.cs">
       <DependentUpon>LoadingProgress.cs</DependentUpon>
     </Compile>
-    <Compile Include="Packets\NumberPacket.cs" />
+    <Compile Include="Packets\RequestPCPacket.cs" />
     <Compile Include="Packets\Packet.cs" />
     <Compile Include="Packets\PCPacket.cs" />
     <Compile Include="Program.cs" />

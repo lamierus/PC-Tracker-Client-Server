@@ -75,7 +75,7 @@
     <Compile Include="LoadingProgressForm.Designer.cs">
       <DependentUpon>LoadingProgressForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Packets\NumberPacket.cs" />
+    <Compile Include="Packets\RequestPCPacket.cs" />
     <Compile Include="Packets\Packet.cs" />
     <Compile Include="Packets\PCPacket.cs" />
     <Compile Include="Packets\NamePacket.cs" />
@@ -101,6 +101,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

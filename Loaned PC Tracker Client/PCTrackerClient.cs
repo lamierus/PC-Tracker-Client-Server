@@ -291,7 +291,8 @@ namespace Loaned_PC_Tracker_Client {
                 type = "Loaners";
             }
 
-            bgwLoadPCs.RunWorkerAsync(type);
+            RequestPCPacket requestPCs = new RequestPCPacket(siteName, type);
+            bgwLoadPCs.RunWorkerAsync(requestPCs);
             ProgressBarForm = new LoadingProgress("Loading " + type + " List");
             ProgressBarForm.ShowDialog();
         }
@@ -302,14 +303,12 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_DoWork(object sender, DoWorkEventArgs e) {
-            var type = e.Argument as string;
+            var requestPCs = e.Argument as RequestPCPacket;
             byte[] inStream = new byte[10025];
-            NetworkStream stream;
-            RequestPCPacket requestPCs = new RequestPCPacket((string)cbSiteChooser.SelectedItem, type);
-
+            
             try {
-                stream = ClientSocket.GetStream();
-                UpdateStatus("Requesting PC's for " + requestPCs.Name);
+                NetworkStream stream = ClientSocket.GetStream();
+                UpdateStatus("Requesting PC's for " + requestPCs.SiteName);
                 stream.Write(requestPCs.CreateDataStream(), 0, requestPCs.PacketLength);
                 stream.Flush();
                 stream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);

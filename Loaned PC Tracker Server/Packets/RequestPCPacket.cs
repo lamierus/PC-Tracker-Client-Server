@@ -15,11 +15,13 @@ namespace Loaned_PC_Tracker_Server {
         public RequestPCPacket() {
             Identifier = DataIdentifier.Name;
             SiteName = string.Empty;
+            Type = string.Empty;
         }
 
-        public RequestPCPacket(string name) {
+        public RequestPCPacket(string name, string type) {
             Identifier = DataIdentifier.Name;
             SiteName = name;
+            Type = type;
         }
 
         public RequestPCPacket(byte[] dataStream) {

@@ -382,7 +382,7 @@ namespace Loaned_PC_Tracker_Server {
 
         public void SendPCsForSite(Client client, string siteName, string type) {
             var dataStream = new List<byte>();
-            Site site = siteList.Find(s => Site.Name == siteName);
+            Site site = siteList.Find(s => s.Name == siteName);
             if (type == "Hotswaps") {
                 foreach (Laptop pc in site.Hotswaps) {
                     dataStream.AddRange(pc.SerializeLaptop());
@@ -443,10 +443,10 @@ namespace Loaned_PC_Tracker_Server {
 
             int lastrow = 2;
             int progress = 0;
-            ProgressMax = (site.AvailableLoaners.Count + site.CheckedOutLoaners.Count);
+            ProgressMax = (site.Loaners.Count);
 
             //todo: add logic to replace the data in the sheet with the new data
-            foreach (Laptop PC in site.AvailableLoaners.Union(site.CheckedOutLoaners)) {
+            foreach (Laptop PC in site.Loaners) {
                 currentSheet.Rows[lastrow].Delete();
                 currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
                 currentSheet.Cells[lastrow, 2].Value = PC.Serial;
@@ -468,10 +468,10 @@ namespace Loaned_PC_Tracker_Server {
 
             lastrow = 2;
             progress = 0;
-            ProgressMax = (site.AvailableHotswaps.Count + site.CheckedOutHotswaps.Count);
+            ProgressMax = (site.Hotswaps.Count);
 
             //todo: add logic to replace the data in the sheet with the new data
-            foreach (Laptop PC in site.AvailableHotswaps.Union(site.CheckedOutHotswaps)) {
+            foreach (Laptop PC in site.Hotswaps) {
                 currentSheet.Rows[lastrow].Delete();
                 currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
                 currentSheet.Cells[lastrow, 2].Value = PC.Serial;

@@ -90,9 +90,10 @@ namespace Loaned_PC_Tracker_Server {
             var siht = e.Argument as PCTrackerServerForm;
             siht.UpdateStatus("Awaiting requests from " + UserName);
             byte[] inStream = new byte[10025];
+            NetworkStream stream;
             while (true) {
                 try {
-                    NetworkStream stream = ClientSocket.GetStream();
+                    stream = ClientSocket.GetStream();
                     stream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
                     RequestPCPacket pcRequest = new RequestPCPacket(inStream);
                     Site = pcRequest.SiteName;

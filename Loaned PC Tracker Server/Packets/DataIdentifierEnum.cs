@@ -3,6 +3,8 @@
         Null = 0,
         Laptop = 1,
         Name = 2,
-        Number = 3
+        Site = 3,
+        Request = 4,
+        Broadcast = 5
     }
 }

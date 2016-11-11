@@ -13,13 +13,13 @@ namespace Loaned_PC_Tracker_Server {
 
         // Default Constructor
         public RequestPCPacket() {
-            Identifier = DataIdentifier.Name;
+            Identifier = DataIdentifier.Request;
             SiteName = string.Empty;
             Type = string.Empty;
         }
 
         public RequestPCPacket(string name, string type) {
-            Identifier = DataIdentifier.Name;
+            Identifier = DataIdentifier.Request;
             SiteName = name;
             Type = type;
         }

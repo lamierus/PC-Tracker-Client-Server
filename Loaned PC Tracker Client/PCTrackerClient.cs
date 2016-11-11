@@ -28,6 +28,7 @@ namespace Loaned_PC_Tracker_Client {
             NoDelay = true,
         };
         private delegate void StringParameterDelegate(string value);
+        private delegate void LaptopParameterDelegate(Laptop laptop);
 
         public PCTrackerClient() {
             InitializeComponent();
@@ -292,7 +293,16 @@ namespace Loaned_PC_Tracker_Client {
             }
 
             RequestPCPacket requestPCs = new RequestPCPacket(siteName, type);
-            bgwLoadPCs.RunWorkerAsync(requestPCs);
+            //bgwLoadPCs.RunWorkerAsync(requestPCs);
+            //NetworkStream stream = ClientSocket.GetStream();
+            try {
+                UpdateStatus("Requesting PC's for " + requestPCs.SiteName);
+                ClientSocket.GetStream().Write(requestPCs.CreateDataStream(), 0, requestPCs.PacketLength);
+                ClientSocket.GetStream().Flush();
+            } catch(Exception ex) {
+                UpdateStatus(ex.Message);
+            }
+            //bgwLoadPCs.RunWorkerAsync();
             ProgressBarForm = new LoadingProgress("Loading " + type + " List");
             ProgressBarForm.ShowDialog();
         }
@@ -302,55 +312,8 @@ namespace Loaned_PC_Tracker_Client {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void bgwLoadPCs_DoWork(object sender, DoWorkEventArgs e) {
-            var requestPCs = e.Argument as RequestPCPacket;
-            byte[] inStream = new byte[10025];
-            
-            try {
-                NetworkStream stream = ClientSocket.GetStream();
-                UpdateStatus("Requesting PC's for " + requestPCs.SiteName);
-                stream.Write(requestPCs.CreateDataStream(), 0, requestPCs.PacketLength);
-                stream.Flush();
-                stream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
-                //List<Laptop> receivedPCs = SplitPCStream(inStream);
-                SplitPCStream(inStream);
-            } catch (Exception ex) {
-                UpdateStatus(ex.Message);
-            }
-            
-        }
-
-        //private List<Laptop> SplitPCStream(byte[] dataStream) {
-        private void SplitPCStream(byte[] dataStream) {
-            var seperator = new char[] { ';' };
-            var stringStream = Encoding.UTF8.GetString(dataStream);
-            var splitStream = stringStream.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
-            //var returnList = new List<Laptop>();
-            foreach (string s in splitStream) {
-                bgwLoadPCs.ReportProgress(0, new Laptop().DeserializeLaptop(s));
-                //returnList.Add(new Laptop().DeserializeLaptop(s));
-            }
-            //return returnList;
-        }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void bgwLoadPCs_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            Laptop PC = e.UserState as Laptop;
-            if (PC.CheckedOut) {
-                CheckedOut.Add(PC);
-            } else {
-                CurrentlyAvailable.Add(PC);
-            }
-
-            if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
-                ProgressBarForm.setProgressMaximum(ProgressMax);
-            }
-
-            ProgressBarForm.updateProgress(e.ProgressPercentage);
+            
         }
 
         /// <summary>
@@ -652,9 +615,17 @@ namespace Loaned_PC_Tracker_Client {
                 try {
                     broadcastStream = ClientSocket.GetStream();
                     broadcastStream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
-                    List<string> broadcast = DeserializeStringStream(inStream);
-                    foreach (string s in broadcast) {
-                        UpdateStatus(s);
+                    var streamIdentifier = (DataIdentifier)BitConverter.ToInt32(inStream, 0);
+                    if (streamIdentifier == DataIdentifier.Broadcast) {
+                        List<string> broadcast = DeserializeStringStream(inStream);
+                        foreach (string s in broadcast) {
+                            UpdateStatus(s);
+                        }
+                    } else if (streamIdentifier == DataIdentifier.Laptop) {
+                        SplitPCStream(inStream);
+                        ProgressBarForm.Close();
+                    } else if (streamIdentifier == DataIdentifier.Null) {
+
                     }
                 } catch (Exception ex) {
                     UpdateStatus(ex.Message);
@@ -663,8 +634,36 @@ namespace Loaned_PC_Tracker_Client {
             }
         }
 
+        //private List<Laptop> SplitPCStream(byte[] dataStream) {
+        private void SplitPCStream(byte[] dataStream) {
+            var seperator = new char[] { ';' };
+            var stringStream = Encoding.UTF8.GetString(dataStream);
+            var splitStream = stringStream.Split(seperator);
+            foreach (string pcString in splitStream) {
+                AddLaptop(new Laptop().DeserializeLaptop(pcString));
+            }
+        }
+
+        private void AddLaptop(Laptop newLaptop) {
+            if (InvokeRequired) {
+                // We're not in the UI thread, so we need to call BeginInvoke
+                BeginInvoke(new LaptopParameterDelegate(AddLaptop), new object[] { newLaptop });
+                return;
+            }
+            // Must be on the UI thread if we've got this far
+            if (newLaptop.CheckedOut) {
+                CheckedOut.Add(newLaptop);
+            } else {
+                CurrentlyAvailable.Add(newLaptop);
+            }
+        }
+
         private void bgwAwaitBroadcasts_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             UpdateStatus("Disconnected from server!");
+        }
+
+        private DataIdentifier IdentifyDataType(byte[] identity) {
+            return (DataIdentifier)BitConverter.ToInt32(identity, 0);
         }
     }
 }

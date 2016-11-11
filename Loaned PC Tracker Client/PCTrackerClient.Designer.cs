@@ -65,9 +65,9 @@
             // 
             this.bgwLoadPCs.WorkerReportsProgress = true;
             this.bgwLoadPCs.WorkerSupportsCancellation = true;
-            this.bgwLoadPCs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwLoadPCs_DoWork);
-            this.bgwLoadPCs.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwLoadPCs_ProgressChanged);
-            this.bgwLoadPCs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwLoadPCs_RunWorkerCompleted);
+            //this.bgwLoadPCs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwLoadPCs_DoWork);
+            //this.bgwLoadPCs.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwLoadPCs_ProgressChanged);
+            //this.bgwLoadPCs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwLoadPCs_RunWorkerCompleted);
             // 
             // bgwSaveChanges
             // 

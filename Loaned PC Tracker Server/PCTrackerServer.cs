@@ -363,6 +363,7 @@ namespace Loaned_PC_Tracker_Server {
                 serializedData[index] = SerializeString(site.Name);
             }
             List<byte> fullDataStream = new List<byte>();
+            fullDataStream.AddRange(BitConverter.GetBytes((int)DataIdentifier.Site));
             foreach (byte[] array in serializedData) {
                 fullDataStream.AddRange(array);
             }
@@ -382,6 +383,7 @@ namespace Loaned_PC_Tracker_Server {
 
         public void SendPCsForSite(Client client, string siteName, string type) {
             var dataStream = new List<byte>();
+            dataStream.AddRange(BitConverter.GetBytes((int)DataIdentifier.Laptop));
             Site site = siteList.Find(s => s.Name == siteName);
             if (type == "Hotswaps") {
                 foreach (Laptop pc in site.Hotswaps) {
@@ -401,10 +403,11 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="packet"></param>
         /// <param name="flag"></param>
         public void Broadcast(PCPacket packet, bool flag = true) {
-            byte[] serializedData = new byte[0];
+            var serializedData = new List<byte>();
+            serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Broadcast));
             //TODO: add code to create the update to be broadcasted to each client
             foreach (Client c in ClientList) {
-                c.StreamDataToClient(serializedData, this);
+                c.StreamDataToClient(serializedData.ToArray(), this);
             }
         }
 
@@ -536,9 +539,11 @@ namespace Loaned_PC_Tracker_Server {
 
         private void testBroadcastToolStripMenuItem_Click(object sender, EventArgs e) {
             string test = "abcdefghijklmnopqrstuvwxyz1234567890-=[]\\',./`ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}|:\"<>?~";
-            byte[] serializedData = SerializeString(test);
+            var serializedData = new List<byte>();
+            serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Broadcast));
+            serializedData.AddRange(SerializeString(test));
             foreach (Client c in ClientList) {
-                c.StreamDataToClient(serializedData, this);
+                c.StreamDataToClient(serializedData.ToArray(), this);
             }
         }
 

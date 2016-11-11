@@ -30,15 +30,12 @@ namespace Loaned_PC_Tracker_Server {
         public Client(TcpClient inClientSocket, PCTrackerServerForm siht) {
             ClientSocket = inClientSocket;
             ClientSocket.NoDelay = true;
-            startClient(siht);
-            initializeBGW();
-        }
-
-        private void initializeBGW() {
             bgwWaitForPCRequests.DoWork += new DoWorkEventHandler(bgwWaitForPCRequests_DoWork);
-            bgwWaitForPCRequests.ProgressChanged += new ProgressChangedEventHandler(bgwWaitForPCRequests_ProgressChanged);
-            bgwWaitForPCRequests.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgwWaitForPCRequests_RunWorkerCompleted);
+            //bgwWaitForPCRequests.ProgressChanged += new ProgressChangedEventHandler(bgwWaitForPCRequests_ProgressChanged);
+            //bgwWaitForPCRequests.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgwWaitForPCRequests_RunWorkerCompleted);
+            startClient(siht);
         }
+        
         /// <summary>
         ///     this creates and starts the tread for the client object, on the server.
         /// </summary>
@@ -60,24 +57,9 @@ namespace Loaned_PC_Tracker_Server {
             return true;
         }
 
-        /// <summary>
-        ///     this is the function that takes care of receiving the packets from the different users,
-        ///     interpreting them and sending out the correct broadcast messages to the other users.
-        /// </summary>
-        public PCPacket GetPCPacket(PCTrackerServerForm siht) {
-            byte[] InStream = new byte[10025];
-            PCPacket receivedPacket = new PCPacket();
-            try {
-                ClientSocket.GetStream().Read(InStream, 0, ClientSocket.ReceiveBufferSize);
-                receivedPacket.GetPacket(InStream);
-            } catch (Exception ex) {
-                siht.UpdateStatus(ex.Message);
-            }
-            return receivedPacket;
-        }
-
         public void StreamDataToClient(byte[] dataToSend, PCTrackerServerForm siht) {
             try {
+                siht.UpdateStatus(" >> Sending data to " + UserName);
                 NetworkStream outStream = ClientSocket.GetStream();
                 outStream.Write(dataToSend, 0, dataToSend.Length);
                 outStream.Flush();
@@ -90,16 +72,14 @@ namespace Loaned_PC_Tracker_Server {
             var siht = e.Argument as PCTrackerServerForm;
             siht.UpdateStatus("Awaiting requests from " + UserName);
             byte[] inStream = new byte[10025];
-            NetworkStream stream;
             while (true) {
                 try {
-                    stream = ClientSocket.GetStream();
-                    stream.Read(inStream, 0, ClientSocket.ReceiveBufferSize);
+                    ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
                     RequestPCPacket pcRequest = new RequestPCPacket(inStream);
                     Site = pcRequest.SiteName;
                     siht.SendPCsForSite(this, pcRequest.SiteName, pcRequest.Type);
                 } catch (Exception ex) {
-                    siht.UpdateStatus(ex.Message);
+                    siht.UpdateStatus(UserName + " disconnected: " + ex.Message);
                     if (!ClientSocket.Connected) {
                         break;
                     }

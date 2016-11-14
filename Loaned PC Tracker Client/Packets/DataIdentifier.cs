@@ -5,6 +5,7 @@
         Name = 2,
         Site = 3,
         Request = 4,
-        Broadcast = 5
+        Broadcast = 5,
+        Change = 6
     }
 }

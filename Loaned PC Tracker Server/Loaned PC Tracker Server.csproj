@@ -75,6 +75,7 @@
     <Compile Include="LoadingProgressForm.Designer.cs">
       <DependentUpon>LoadingProgressForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Packets\PCChange.cs" />
     <Compile Include="Packets\RequestPCPacket.cs" />
     <Compile Include="Packets\Packet.cs" />
     <Compile Include="Packets\PCPacket.cs" />

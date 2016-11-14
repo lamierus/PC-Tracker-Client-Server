@@ -153,7 +153,6 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            //UpdateStatus((string)e.UserState);
             if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
             }
@@ -252,6 +251,8 @@ namespace Loaned_PC_Tracker_Client {
                 }*/
                 CurrentlyAvailable.Clear();
                 CheckedOut.Clear();
+                dgvAvailable.Columns[0].Visible = true;
+                dgvCheckedOut.Columns[0].Visible = true;
                 AccessLoanedPCData((string)cbSiteChooser.SelectedItem, false);
             }
         }
@@ -275,6 +276,8 @@ namespace Loaned_PC_Tracker_Client {
                 }*/
                 CurrentlyAvailable.Clear();
                 CheckedOut.Clear();
+                dgvAvailable.Columns[0].Visible = false;
+                dgvCheckedOut.Columns[0].Visible = false;
                 AccessLoanedPCData((string)cbSiteChooser.SelectedItem, true);
             }
         }
@@ -293,40 +296,17 @@ namespace Loaned_PC_Tracker_Client {
             }
 
             RequestPCPacket requestPCs = new RequestPCPacket(siteName, type);
-            //bgwLoadPCs.RunWorkerAsync(requestPCs);
-            //NetworkStream stream = ClientSocket.GetStream();
             try {
-                UpdateStatus("Requesting PC's for " + requestPCs.SiteName);
+                UpdateStatus("Requesting " + type + " for " + requestPCs.SiteName);
                 ClientSocket.GetStream().Write(requestPCs.CreateDataStream(), 0, requestPCs.PacketLength);
                 ClientSocket.GetStream().Flush();
             } catch(Exception ex) {
                 UpdateStatus(ex.Message);
             }
-            //bgwLoadPCs.RunWorkerAsync();
             ProgressBarForm = new LoadingProgress("Loading " + type + " List");
             ProgressBarForm.ShowDialog();
         }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void bgwLoadPCs_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            
-        }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void bgwLoadPCs_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
-            CurrentlyAvailable.ResetBindings();
-            CheckedOut.ResetBindings();
-            ProgressBarForm.Close();
-        }
-
+        /*
         /// <summary>
         ///     check for a blank cell value and return a string, if that is expected
         /// </summary>
@@ -407,7 +387,7 @@ namespace Loaned_PC_Tracker_Client {
             }
             return strColumnName;
         }
-
+        */
         /// <summary>
         ///     
         /// </summary>
@@ -516,7 +496,7 @@ namespace Loaned_PC_Tracker_Client {
                 }
             }
         }
-
+        /*
         /// <summary>
         ///     
         /// </summary>
@@ -598,7 +578,7 @@ namespace Loaned_PC_Tracker_Client {
 
             ProgressBarForm.Close();
         }
-
+        */
         /// <summary>
         ///     
         /// </summary>
@@ -608,6 +588,11 @@ namespace Loaned_PC_Tracker_Client {
             excelApp.Quit();
         }
 
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void bgwAwaitBroadcasts_DoWork(object sender, DoWorkEventArgs e) {
             NetworkStream broadcastStream;
             byte[] inStream = new byte[10025];
@@ -623,13 +608,13 @@ namespace Loaned_PC_Tracker_Client {
                         }
                     } else if (streamIdentifier == DataIdentifier.Laptop) {
                         SplitPCStream(inStream);
-                        ProgressBarForm.Close();
+                        bgwAwaitBroadcasts.ReportProgress(0);
                     } else if (streamIdentifier == DataIdentifier.Null) {
 
                     }
                 } catch (Exception ex) {
                     UpdateStatus(ex.Message);
-                    break;
+                    //break;
                 }
             }
         }
@@ -639,11 +624,15 @@ namespace Loaned_PC_Tracker_Client {
             var seperator = new char[] { ';' };
             var stringStream = Encoding.UTF8.GetString(dataStream);
             var splitStream = stringStream.Split(seperator);
-            foreach (string pcString in splitStream) {
-                AddLaptop(new Laptop().DeserializeLaptop(pcString));
+            for(int i = 1; i < splitStream.Length - 1; i++) {
+                AddLaptop(new Laptop().DeserializeLaptop(splitStream[i]));
             }
         }
 
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="newLaptop"></param>
         private void AddLaptop(Laptop newLaptop) {
             if (InvokeRequired) {
                 // We're not in the UI thread, so we need to call BeginInvoke
@@ -658,12 +647,22 @@ namespace Loaned_PC_Tracker_Client {
             }
         }
 
-        private void bgwAwaitBroadcasts_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
-            UpdateStatus("Disconnected from server!");
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void bgwAwaitBroadcasts_ProgressChanged(object sender, ProgressChangedEventArgs e) {
+            ProgressBarForm.Close();
         }
 
-        private DataIdentifier IdentifyDataType(byte[] identity) {
-            return (DataIdentifier)BitConverter.ToInt32(identity, 0);
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void bgwAwaitBroadcasts_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
+            UpdateStatus("Disconnected from server!");
         }
     }
 }

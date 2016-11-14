@@ -91,6 +91,7 @@
       <DependentUpon>ConnectionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Packets\DataIdentifier.cs" />
+    <Compile Include="Packets\PCPacket.cs" />
     <Compile Include="PCTrackerClient.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -107,7 +108,7 @@
     </Compile>
     <Compile Include="Packets\RequestPCPacket.cs" />
     <Compile Include="Packets\Packet.cs" />
-    <Compile Include="Packets\PCPacket.cs" />
+    <Compile Include="Packets\PCChange.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Viewer.cs">

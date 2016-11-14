@@ -65,24 +65,11 @@
             // 
             this.bgwLoadPCs.WorkerReportsProgress = true;
             this.bgwLoadPCs.WorkerSupportsCancellation = true;
-            //this.bgwLoadPCs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwLoadPCs_DoWork);
-            //this.bgwLoadPCs.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwLoadPCs_ProgressChanged);
-            //this.bgwLoadPCs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwLoadPCs_RunWorkerCompleted);
             // 
             // bgwSaveChanges
             // 
             this.bgwSaveChanges.WorkerReportsProgress = true;
             this.bgwSaveChanges.WorkerSupportsCancellation = true;
-            this.bgwSaveChanges.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwSaveChanges_DoWork);
-            this.bgwSaveChanges.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwSaveChanges_ProgressChanged);
-            this.bgwSaveChanges.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwSaveChanges_RunWorkerCompleted);
-            // 
-            // bgwAwaitBroadcasts
-            // 
-            this.bgwAwaitBroadcasts.WorkerReportsProgress = true;
-            this.bgwAwaitBroadcasts.WorkerSupportsCancellation = true;
-            this.bgwAwaitBroadcasts.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwAwaitBroadcasts_DoWork);
-            this.bgwAwaitBroadcasts.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwAwaitBroadcasts_RunWorkerCompleted);
             // 
             // cbSiteChooser
             // 
@@ -305,7 +292,7 @@
             this.btnSaveChanges.TabIndex = 15;
             this.btnSaveChanges.Text = "Save Changes";
             this.btnSaveChanges.UseVisualStyleBackColor = true;
-            this.btnSaveChanges.Click += new System.EventHandler(this.btnSaveChanges_Click);
+            this.btnSaveChanges.Visible = false;
             // 
             // tbConnectionStatus
             // 
@@ -317,6 +304,14 @@
             this.tbConnectionStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tbConnectionStatus.Size = new System.Drawing.Size(245, 68);
             this.tbConnectionStatus.TabIndex = 16;
+            // 
+            // bgwAwaitBroadcasts
+            // 
+            this.bgwAwaitBroadcasts.WorkerReportsProgress = true;
+            this.bgwAwaitBroadcasts.WorkerSupportsCancellation = true;
+            this.bgwAwaitBroadcasts.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwAwaitBroadcasts_DoWork);
+            this.bgwAwaitBroadcasts.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwAwaitBroadcasts_ProgressChanged);
+            this.bgwAwaitBroadcasts.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwAwaitBroadcasts_RunWorkerCompleted);
             // 
             // PCTrackerClient
             // 

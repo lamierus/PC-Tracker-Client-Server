@@ -129,12 +129,13 @@ namespace Loaned_PC_Tracker_Client {
 
         public Laptop DeserializeLaptop(string serializedPC) {
             char[] seperator = new char[] { ',' };
+            char[] trim = new char[] { '\0' };
             Laptop deserializedPC = new Laptop();
             
             string[] splitString = serializedPC.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
 
             int parsedNum;
-            if (int.TryParse(splitString[0], out parsedNum)) {
+            if (int.TryParse(splitString[0].Trim(trim), out parsedNum)) {
                 deserializedPC.Number = parsedNum;
             }
 

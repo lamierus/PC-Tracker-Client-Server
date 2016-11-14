@@ -2,22 +2,12 @@
 using System.Net;
 using System.Net.Sockets;
 using System.ComponentModel;
-using System.Windows.Forms;
-using System.Reflection;
-using System.Threading;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Loaned_PC_Tracker_Server {
     //Class to handle each client request seperately
     public class Client {
         static public int UserCount { get; set; }
-
-        private BackgroundWorker bgwWaitForPCRequests = new BackgroundWorker() {
-            WorkerReportsProgress = true,
-            WorkerSupportsCancellation = true,
-        };
+        
         public string UserName { get; set; }
         public string Site { get; set; }
         public bool Hotswaps { get; set; }
@@ -26,6 +16,10 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         private TcpClient ClientSocket;
+        private BackgroundWorker bgwWaitForPCRequests = new BackgroundWorker() {
+            WorkerReportsProgress = true,
+            WorkerSupportsCancellation = true,
+        };
 
         public Client(TcpClient inClientSocket, PCTrackerServerForm siht) {
             ClientSocket = inClientSocket;
@@ -75,9 +69,16 @@ namespace Loaned_PC_Tracker_Server {
             while (true) {
                 try {
                     ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
-                    RequestPCPacket pcRequest = new RequestPCPacket(inStream);
-                    Site = pcRequest.SiteName;
-                    siht.SendPCsForSite(this, pcRequest.SiteName, pcRequest.Type);
+                    var streamIdentifier = (DataIdentifier)BitConverter.ToInt32(inStream, 0);
+                    if (streamIdentifier == DataIdentifier.Request) {
+                        RequestPCPacket pcRequest = new RequestPCPacket(inStream);
+                        Site = pcRequest.SiteName;
+                        siht.SendPCsForSite(this, pcRequest.SiteName, pcRequest.Type);
+                    } else if (streamIdentifier == DataIdentifier.Change) {
+
+                    } else if(streamIdentifier == DataIdentifier.Laptop) {
+
+                    }
                 } catch (Exception ex) {
                     siht.UpdateStatus(UserName + " disconnected: " + ex.Message);
                     if (!ClientSocket.Connected) {

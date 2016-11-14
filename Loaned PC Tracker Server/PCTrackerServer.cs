@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Net;
 using System.Net.Sockets;
@@ -26,7 +21,6 @@ namespace Loaned_PC_Tracker_Server {
         private string FilePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\PC Tracker\\";
         private string SiteFileName = "Sites.xlsx";
         private LoadingProgress ProgressBarForm;
-        //private int Counter = 0;
         private int ProgressMax;
         private bool Changed;
         private bool WindowDrawn;
@@ -384,6 +378,7 @@ namespace Loaned_PC_Tracker_Server {
         public void SendPCsForSite(Client client, string siteName, string type) {
             var dataStream = new List<byte>();
             dataStream.AddRange(BitConverter.GetBytes((int)DataIdentifier.Laptop));
+            dataStream.AddRange(BitConverter.GetBytes(';'));
             Site site = siteList.Find(s => s.Name == siteName);
             if (type == "Hotswaps") {
                 foreach (Laptop pc in site.Hotswaps) {

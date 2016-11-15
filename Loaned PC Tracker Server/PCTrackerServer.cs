@@ -126,6 +126,7 @@ namespace Loaned_PC_Tracker_Server {
                 ProgressBarForm = new LoadingProgress("Loading PC Lists");
                 ProgressBarForm.ShowDialog();
             }
+            bgwSaveChanges.RunWorkerAsync();
             openConnection();
         }
         
@@ -404,7 +405,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void saveToolStripMenuItem_Click(object sender, EventArgs e) {
-            //SaveChanges();
+            SaveChanges();
         }
 
         /// <summary>
@@ -413,12 +414,54 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="siteName"></param>
         /// <param name="hotswaps"></param>
         private void SaveChanges() {
+            Excel.Application excelApp = new Excel.Application() {
+                Visible = false,
+                DisplayAlerts = false
+            };
             foreach (Site site in siteList) {
                 UpdateStatus("Saving " + site.Name + "'s PC lists");
-                bgwSaveChanges.RunWorkerAsync(site);
-                ProgressBarForm = new LoadingProgress("Saving PC Lists");
-                ProgressBarForm.ShowDialog();
+                Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
+                Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
+
+                int lastrow = 2;
+                foreach (Laptop PC in site.Loaners) {
+                    currentSheet.Rows[lastrow].Delete();
+                    currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
+                    currentSheet.Cells[lastrow, 2].Value = PC.Serial;
+                    currentSheet.Cells[lastrow, 3].Value = PC.Brand;
+                    currentSheet.Cells[lastrow, 4].Value = PC.Model;
+                    currentSheet.Cells[lastrow, 5].Value = PC.Warranty;
+                    currentSheet.Cells[lastrow, 6].Value = PC.Username;
+                    currentSheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
+                    currentSheet.Cells[lastrow, 8].Value = PC.TicketNumber;
+                    currentSheet.Cells[lastrow, 9].Value = PC.CheckedOut;
+                    lastrow++;
+                }
+                workbook.Save();
+                workbook.Close();
+
+                workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Hotswaps.xlsx");
+                currentSheet = workbook.Worksheets.Item[1];
+
+                lastrow = 2;
+                foreach (Laptop PC in site.Hotswaps) {
+                    currentSheet.Rows[lastrow].Delete();
+                    currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
+                    currentSheet.Cells[lastrow, 2].Value = PC.Serial;
+                    currentSheet.Cells[lastrow, 3].Value = PC.Brand;
+                    currentSheet.Cells[lastrow, 4].Value = PC.Model;
+                    currentSheet.Cells[lastrow, 5].Value = PC.Warranty;
+                    currentSheet.Cells[lastrow, 6].Value = PC.Username;
+                    currentSheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
+                    currentSheet.Cells[lastrow, 8].Value = PC.TicketNumber;
+                    currentSheet.Cells[lastrow, 9].Value = PC.CheckedOut;
+                    lastrow++;
+                }
+                workbook.Save();
+                workbook.Close();
             }
+            UpdateStatus("Saving completed!");
+            excelApp.Quit();
         }
 
         /// <summary>
@@ -427,61 +470,12 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwSaveChanges_DoWork(object sender, DoWorkEventArgs e) {
-            Excel.Application excelApp = new Excel.Application() {
-                Visible = false,
-                DisplayAlerts = false
-            };
-            Site site = (Site)e.Argument;
-            Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
-            Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
-
-            int lastrow = 2;
-            int progress = 0;
-            ProgressMax = (site.Loaners.Count);
-
-            //todo: add logic to replace the data in the sheet with the new data
-            foreach (Laptop PC in site.Loaners) {
-                currentSheet.Rows[lastrow].Delete();
-                currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
-                currentSheet.Cells[lastrow, 2].Value = PC.Serial;
-                currentSheet.Cells[lastrow, 3].Value = PC.Brand;
-                currentSheet.Cells[lastrow, 4].Value = PC.Model;
-                currentSheet.Cells[lastrow, 5].Value = PC.Warranty;
-                currentSheet.Cells[lastrow, 6].Value = PC.Username;
-                currentSheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
-                currentSheet.Cells[lastrow, 8].Value = PC.TicketNumber;
-                currentSheet.Cells[lastrow, 9].Value = PC.CheckedOut;
-                lastrow++;
-                bgwSaveChanges.ReportProgress(++progress, PC.Serial);
+            while (!bgwSaveChanges.CancellationPending) {
+                DateTime start = DateTime.Now;
+                //while (DateTime.Now.Subtract(start).Seconds < 20) { }
+                while (DateTime.Now.Subtract(start).Minutes < 30) { }
+                SaveChanges();
             }
-            workbook.Save();
-            workbook.Close();
-
-            workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Hotswaps.xlsx");
-            currentSheet = workbook.Worksheets.Item[1];
-
-            lastrow = 2;
-            progress = 0;
-            ProgressMax = (site.Hotswaps.Count);
-
-            //todo: add logic to replace the data in the sheet with the new data
-            foreach (Laptop PC in site.Hotswaps) {
-                currentSheet.Rows[lastrow].Delete();
-                currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
-                currentSheet.Cells[lastrow, 2].Value = PC.Serial;
-                currentSheet.Cells[lastrow, 3].Value = PC.Brand;
-                currentSheet.Cells[lastrow, 4].Value = PC.Model;
-                currentSheet.Cells[lastrow, 5].Value = PC.Warranty;
-                currentSheet.Cells[lastrow, 6].Value = PC.Username;
-                currentSheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
-                currentSheet.Cells[lastrow, 8].Value = PC.TicketNumber;
-                currentSheet.Cells[lastrow, 9].Value = PC.CheckedOut;
-                lastrow++;
-                bgwSaveChanges.ReportProgress(++progress, PC.Serial);
-            }
-            workbook.Save();
-            workbook.Close();
-            excelApp.Quit();
         }
 
         /// <summary>
@@ -560,11 +554,14 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         private void autoSaveToolStripMenuItem_Click(object sender, EventArgs e) {
-            var sent = sender as ToolStripMenuItem;
-            if (sent.Checked) {
-                sent.Checked = false;
+            if (autoSaveToolStripMenuItem.Checked) {
+                UpdateStatus(" ** AutoSave Enabled ** ");
+                if (!bgwSaveChanges.IsBusy) {
+                    bgwSaveChanges.RunWorkerAsync();
+                }
             } else {
-                sent.Checked = true;
+                UpdateStatus(" ** Warning: AutoSave Disabled ** ");
+                bgwSaveChanges.CancelAsync();
             }
         }
 

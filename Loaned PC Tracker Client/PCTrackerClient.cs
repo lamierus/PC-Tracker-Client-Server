@@ -128,8 +128,6 @@ namespace Loaned_PC_Tracker_Client {
             
             byte[] inStream = new byte[10025];
             try {
-                //ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
-                //ProgressMax = DeserializeIntStream(inStream);
                 ClientSocket.GetStream().Read(inStream, 0, ClientSocket.ReceiveBufferSize);
                 List<string> sites = DeserializeStringStream(inStream);
                 foreach(string s in sites) {
@@ -137,7 +135,6 @@ namespace Loaned_PC_Tracker_Client {
                 }
             } catch (Exception ex) {
                 UpdateStatus(ex.Message);
-                //bgwLoadSites.ReportProgress(0, ex.Message);
             }
         }
 
@@ -240,17 +237,8 @@ namespace Loaned_PC_Tracker_Client {
         private void rbLoaner_CheckedChanged(object sender, EventArgs e) {
             RadioButton sent = sender as RadioButton;
             if (sent.Checked) {
-                /*if (Changed) {
-                    using (var form = new ConfirmChanges()) {
-                        var result = form.ShowDialog();
-                        if (result == DialogResult.OK) {
-                            SaveChanges(((string)cbSiteChooser.SelectedItem).Split(' ')[0], true);
-                        }
-                    }
-                    Changed = false;
-                }*/
-                CurrentlyAvailable.Clear();
-                CheckedOut.Clear();
+                ClearPCLists();
+                EnableDisableButtons(true);
                 dgvAvailable.Columns[0].Visible = true;
                 dgvCheckedOut.Columns[0].Visible = true;
                 AccessLoanedPCData((string)cbSiteChooser.SelectedItem, false);
@@ -265,21 +253,25 @@ namespace Loaned_PC_Tracker_Client {
         private void rbHotSwap_CheckedChanged(object sender, EventArgs e) {
             RadioButton sent = sender as RadioButton;
             if (sent.Checked) {
-                /*if (Changed) {
-                    using (var form = new ConfirmChanges()) {
-                        var result = form.ShowDialog();
-                        if (result == DialogResult.OK) {
-                            SaveChanges(((string)cbSiteChooser.SelectedItem).Split(' ')[0], false);
-                        }
-                    }
-                    Changed = false;
-                }*/
-                CurrentlyAvailable.Clear();
-                CheckedOut.Clear();
+                ClearPCLists();
+                EnableDisableButtons(true);
                 dgvAvailable.Columns[0].Visible = false;
                 dgvCheckedOut.Columns[0].Visible = false;
                 AccessLoanedPCData((string)cbSiteChooser.SelectedItem, true);
             }
+        }
+
+        private void ClearPCLists() {
+            CurrentlyAvailable.Clear();
+            CheckedOut.Clear();
+        }
+
+        private void EnableDisableButtons(bool disposition) {
+            btnAddNew.Enabled = disposition;
+            btnCheckIn.Enabled = disposition;
+            btnCheckOut.Enabled = disposition;
+            btnEditPC.Enabled = disposition;
+            btnRemoveOld.Enabled = disposition;
         }
 
         /// <summary>
@@ -306,88 +298,7 @@ namespace Loaned_PC_Tracker_Client {
             ProgressBarForm = new LoadingProgress("Loading " + type + " List");
             ProgressBarForm.ShowDialog();
         }
-        /*
-        /// <summary>
-        ///     check for a blank cell value and return a string, if that is expected
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns> a string of the cell contents</returns>
-        private string stringCheckNull(object value) {
-            if (value == null) {
-                return "";
-            }
-            return value.ToString();
-        }
 
-        /// <summary>
-        ///     check for a blank cell value and return a boolean, if that is expected
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns> a if the cell contents are null or true/false</returns>
-        private bool boolCheckNull(object value) {
-            if (value == null) {
-                return false;
-            }
-            if ((bool)value) {
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        ///     check for a blank cell value and return an integer, if that is expected
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns> 0 if the cell is blank or the object doesn't parse, otherwise returns an int value</returns>
-        private int intCheckNull(object value) {
-            int parsedNum;
-            if (value == null) {
-                return 0;
-            }
-            if (int.TryParse(value.ToString(), out parsedNum)) {
-                return parsedNum;
-            } else {
-                return 0;
-            }
-        }
-
-        /// <summary>
-        ///     Returns the last row number that has any information in any cell of an excel sheet
-        /// </summary>
-        /// <param name="worksheet"></param>
-        /// <returns> the last row number with any data </returns>
-        private int getMaxRow(Excel.Worksheet worksheet) {
-            int lastRow = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell).Row;
-            return lastRow;
-        }
-
-        /// <summary>
-        ///     returns the last column number that has any information in any cell of an excel sheet
-        /// </summary>
-        /// <param name="worksheet"></param>
-        /// <returns> the last column number with any data </returns>
-        private int getMaxCol(Excel.Worksheet worksheet) {
-            int lastCol = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell).Column;
-            return lastCol;
-        }
-
-        /// <summary>
-        ///     returns a full column name using the column number as a basis
-        /// </summary>
-        /// <param name="columnNumber"></param>
-        /// <returns></returns>
-        private string ColumnNumToString(int columnNumber) {
-            int dividend = columnNumber;
-            string strColumnName = "";
-            int modulo;
-            while (dividend > 0) {
-                modulo = (dividend - 1) % 26;
-                strColumnName = Convert.ToChar(65 + modulo).ToString() + strColumnName;
-                dividend = (int)((dividend - modulo) / 26);
-            }
-            return strColumnName;
-        }
-        */
         /// <summary>
         ///     
         /// </summary>
@@ -414,15 +325,24 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnCheckOut_Click(object sender, EventArgs e) {
-            Laptop checkOutPC = (Laptop)dgvAvailable.SelectedRows[0].DataBoundItem;
-            if (checkOutPC != null) {
-                using (var form = new CheckOutOrIn(checkOutPC, rbHotSwaps.Checked)) {
-                    var result = form.ShowDialog();
-                    if (result == DialogResult.OK) {
-                        checkOutPC = form.ReturnPC;
-                        CurrentlyAvailable.Remove(checkOutPC);
-                        CheckedOut.Add(checkOutPC);
-                        //Changed = true;
+            if (CurrentlyAvailable.Count > 0) {
+                Laptop checkOutPC = (Laptop)dgvAvailable.SelectedRows[0].DataBoundItem;
+                if (checkOutPC != null) {
+                    using (var form = new CheckOutOrIn(checkOutPC, rbHotSwaps.Checked)) {
+                        var result = form.ShowDialog();
+                        if (result == DialogResult.OK) {
+                            checkOutPC = form.ReturnPC;
+                            CurrentlyAvailable.Remove(checkOutPC);
+                            CheckedOut.Add(checkOutPC);
+                            var checkedOutPacket = new PCChange(checkOutPC);
+                            try {
+                                NetworkStream stream = ClientSocket.GetStream();
+                                stream.Write(checkedOutPacket.CreateDataStream(), 0, checkedOutPacket.PacketLength);
+                                stream.Flush();
+                            } catch (Exception ex) {
+                                UpdateStatus(ex.Message);
+                            }
+                        }
                     }
                 }
             }
@@ -434,15 +354,24 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnCheckIn_Click(object sender, EventArgs e) {
-            Laptop checkInPC = (Laptop)dgvCheckedOut.SelectedRows[0].DataBoundItem;
-            if (checkInPC != null) {
-                using (var form = new CheckOutOrIn(checkInPC, rbHotSwaps.Checked, true)) {
-                    var result = form.ShowDialog();
-                    if (result == DialogResult.OK) {
-                        checkInPC = form.ReturnPC;
-                        CheckedOut.Remove(checkInPC);
-                        CurrentlyAvailable.Add(checkInPC);
-                        //Changed = true;
+            if (CheckedOut.Count > 0) {
+                Laptop checkInPC = (Laptop)dgvCheckedOut.SelectedRows[0].DataBoundItem;
+                if (checkInPC != null) {
+                    using (var form = new CheckOutOrIn(checkInPC, rbHotSwaps.Checked, true)) {
+                        var result = form.ShowDialog();
+                        if (result == DialogResult.OK) {
+                            checkInPC = form.ReturnPC;
+                            CheckedOut.Remove(checkInPC);
+                            CurrentlyAvailable.Add(checkInPC);
+                            var checkedInPacket = new PCChange(checkInPC);
+                            try {
+                                NetworkStream stream = ClientSocket.GetStream();
+                                stream.Write(checkedInPacket.CreateDataStream(), 0, checkedInPacket.PacketLength);
+                                stream.Flush();
+                            } catch (Exception ex) {
+                                UpdateStatus(ex.Message);
+                            }
+                        }
                     }
                 }
             }
@@ -454,14 +383,15 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnEditPC_Click(object sender, EventArgs e) {
-            Laptop editedPC = (Laptop)dgvAvailable.SelectedRows[0].DataBoundItem;
-            using (var form = new AddEditRemove(editedPC, false, rbHotSwaps.Checked)) {
-                var result = form.ShowDialog();
-                if (result == DialogResult.OK) {
-                    CurrentlyAvailable.Remove(editedPC);
-                    editedPC = form.ReturnPC;
-                    CurrentlyAvailable.Add(editedPC);
-                    //Changed = true;
+            if (CurrentlyAvailable.Count > 0) {
+                Laptop editedPC = (Laptop)dgvAvailable.SelectedRows[0].DataBoundItem;
+                using (var form = new AddEditRemove(editedPC, false, rbHotSwaps.Checked)) {
+                    var result = form.ShowDialog();
+                    if (result == DialogResult.OK) {
+                        CurrentlyAvailable.Remove(editedPC);
+                        editedPC = form.ReturnPC;
+                        CurrentlyAvailable.Add(editedPC);
+                    }
                 }
             }
         }
@@ -476,7 +406,6 @@ namespace Loaned_PC_Tracker_Client {
                 var result = form.ShowDialog();
                 if (result == DialogResult.OK) {
                     CurrentlyAvailable.Add(form.ReturnPC);
-                    //Changed = true;
                 }
             }
         }
@@ -487,98 +416,16 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnRemoveOld_Click(object sender, EventArgs e) {
-            Laptop PCtoRemove = (Laptop)dgvAvailable.SelectedRows[0].DataBoundItem;
-            using (var form = new AddEditRemove(PCtoRemove, true)) {
-                var result = form.ShowDialog();
-                if (result == DialogResult.OK) {
-                    CurrentlyAvailable.Remove(PCtoRemove);
-                    //Changed = true;
+            if (CurrentlyAvailable.Count > 0) {
+                Laptop PCtoRemove = (Laptop)dgvAvailable.SelectedRows[0].DataBoundItem;
+                using (var form = new AddEditRemove(PCtoRemove, true)) {
+                    var result = form.ShowDialog();
+                    if (result == DialogResult.OK) {
+                        CurrentlyAvailable.Remove(PCtoRemove);
+                    }
                 }
             }
         }
-        /*
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnSaveChanges_Click(object sender, EventArgs e) {
-            bool hotswap = false;
-            if (rbHotSwaps.Checked) {
-                hotswap = true;
-            }
-            SaveChanges(((string)cbSiteChooser.SelectedItem).Split(' ')[0], hotswap);
-        }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="siteName"></param>
-        /// <param name="hotswaps"></param>
-        private void SaveChanges(string siteName, bool hotswaps) {
-            //bgwSaveChanges.RunWorkerAsync(localFile);
-            //ProgressBarForm = new LoadingProgress("Saving " + type + " List");
-            //ProgressBarForm.ShowDialog();
-        }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void bgwSaveChanges_DoWork(object sender, DoWorkEventArgs e) {
-            string fileName = (string)e.Argument;
-            Excel.Workbook workbook = excelApp.Workbooks.Open(fileName);
-            Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
-
-            int lastrow = 2;
-            int progress = 0;
-            ProgressMax = (CurrentlyAvailable.Count + CheckedOut.Count);
-
-            //todo: add logic to replace the data in the sheet with the new data
-            foreach (Laptop PC in CurrentlyAvailable.Union(CheckedOut)) {
-                currentSheet.Rows[lastrow].Delete();
-                currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
-                currentSheet.Cells[lastrow, 2].Value = PC.Serial;
-                currentSheet.Cells[lastrow, 3].Value = PC.Brand;
-                currentSheet.Cells[lastrow, 4].Value = PC.Model;
-                currentSheet.Cells[lastrow, 5].Value = PC.Warranty;
-                currentSheet.Cells[lastrow, 6].Value = PC.Username;
-                currentSheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
-                currentSheet.Cells[lastrow, 8].Value = PC.TicketNumber;
-                currentSheet.Cells[lastrow, 9].Value = PC.CheckedOut;
-                lastrow++;
-                bgwSaveChanges.ReportProgress(++progress);
-            }
-            workbook.Save();
-            workbook.Close();
-        }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void bgwSaveChanges_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
-                ProgressBarForm.setProgressMaximum(ProgressMax);
-            }
-            ProgressBarForm.updateProgress(e.ProgressPercentage);
-        }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void bgwSaveChanges_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
-            CurrentlyAvailable.ResetBindings();
-            CheckedOut.ResetBindings();
-            //Changed = false;
-
-            ProgressBarForm.Close();
-        }
-        */
         /// <summary>
         ///     
         /// </summary>
@@ -614,7 +461,8 @@ namespace Loaned_PC_Tracker_Client {
                     }
                 } catch (Exception ex) {
                     UpdateStatus(ex.Message);
-                    //break;
+                    //TODO: add a prompt for the user to reconnect to the server.
+                    break;
                 }
             }
         }
@@ -653,6 +501,8 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwAwaitBroadcasts_ProgressChanged(object sender, ProgressChangedEventArgs e) {
+            CurrentlyAvailable.ResetBindings();
+            CheckedOut.ResetBindings();
             ProgressBarForm.Close();
         }
 

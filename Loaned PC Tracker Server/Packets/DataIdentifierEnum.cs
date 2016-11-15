@@ -6,6 +6,6 @@
         Site = 3,
         Request = 4,
         Broadcast = 5,
-        Change = 6
+        Update = 6
     }
 }

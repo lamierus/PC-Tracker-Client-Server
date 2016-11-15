@@ -127,6 +127,14 @@ namespace Loaned_PC_Tracker_Server {
             return deserializedPC;
         }
 
+        public void MergeChanges(PCChange changes) {
+            Serial = changes.Serial;
+            Username = changes.UserName;
+            UserPCSerial = changes.UserPCSerial;
+            TicketNumber = changes.Ticket;
+            CheckedOut = changes.CheckedOut;
+        }
+
         // the logic required to be able to compare CSATs to each other
         public override bool Equals(object obj) {
             if (obj == null) {

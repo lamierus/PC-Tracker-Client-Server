@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Loaned_PC_Tracker_Server.Packets {
+namespace Loaned_PC_Tracker_Server {
+
     public class PCChange : Packet {
         public string Serial { get; set; }
         public string UserName { get; set; }
@@ -18,8 +17,16 @@ namespace Loaned_PC_Tracker_Server.Packets {
 
         // Default Constructor
         public PCChange() {
-            Identifier = DataIdentifier.Change;
-            UserName = null;
+            Identifier = DataIdentifier.Update;
+        }
+
+        public PCChange(Laptop PC) {
+            Identifier = DataIdentifier.Update;
+            Serial = PC.Serial;
+            UserName = PC.Username;
+            UserPCSerial = PC.UserPCSerial;
+            Ticket = PC.TicketNumber;
+            CheckedOut = PC.CheckedOut;
         }
 
         public PCChange(byte[] dataStream) {
@@ -31,7 +38,7 @@ namespace Loaned_PC_Tracker_Server.Packets {
             // Read the data identifier from the beginning of the stream (4 bytes)
             Identifier = (DataIdentifier)BitConverter.ToInt32(dataStream, index);
             index += 4;
-
+            
             // Read the length of the serial (4 bytes)
             int serialLength = BitConverter.ToInt32(dataStream, index);
             index += 4;
@@ -47,11 +54,7 @@ namespace Loaned_PC_Tracker_Server.Packets {
             // Read the length of the name (4 bytes)
             int ticketLength = BitConverter.ToInt32(dataStream, index);
             index += 4;
-
-            // Read the length of the name (4 bytes)
-            int checkedOutLength = BitConverter.ToInt32(dataStream, index);
-            index += 4;
-
+                        
             // Read the name field
             if (serialLength > 0)
                 Serial = Encoding.UTF8.GetString(dataStream, index, serialLength);
@@ -81,72 +84,69 @@ namespace Loaned_PC_Tracker_Server.Packets {
             index += ticketLength;
 
             // Read the name field
-            if (checkedOutLength > 0)
-                CheckedOut = BitConverter.ToBoolean(dataStream, index);
-            else
-                CheckedOut = false;
+            CheckedOut = BitConverter.ToBoolean(dataStream, index);
         }
 
 
         // Converts the packet into a byte array for sending/receiving 
         public override byte[] CreateDataStream() {
-            byte[] seperator = BitConverter.GetBytes(',');
+            //byte[] seperator = BitConverter.GetBytes(',');
             List<byte> dataStream = new List<byte>();
 
             // Add the dataIdentifier
             dataStream.AddRange(BitConverter.GetBytes((int)Identifier));
-            dataStream.AddRange(seperator);
-
-            // Add the name length
+            //dataStream.AddRange(seperator);
+            
+            // Add the serial length
             if (Serial != null)
                 dataStream.AddRange(BitConverter.GetBytes(Serial.Length));
             else
                 dataStream.AddRange(BitConverter.GetBytes(0));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
-            // Add the name length
+            // Add the username length
             if (UserName != null)
                 dataStream.AddRange(BitConverter.GetBytes(UserName.Length));
             else
                 dataStream.AddRange(BitConverter.GetBytes(0));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
-            // Add the name length
+            // Add the user's PC serial# length
             if (UserPCSerial != null)
                 dataStream.AddRange(BitConverter.GetBytes(UserPCSerial.Length));
             else
                 dataStream.AddRange(BitConverter.GetBytes(0));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
-            // Add the name length
+            // Add the ticket# length
             if (Ticket != null)
                 dataStream.AddRange(BitConverter.GetBytes(Ticket.Length));
             else
                 dataStream.AddRange(BitConverter.GetBytes(0));
-            dataStream.AddRange(seperator);
-
-            // Add the name
+            //dataStream.AddRange(seperator);
+            
+            // Add the serial
             if (Serial != null)
                 dataStream.AddRange(Encoding.UTF8.GetBytes(Serial));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
-            // Add the name
+            // Add the username
             if (UserName != null)
                 dataStream.AddRange(Encoding.UTF8.GetBytes(UserName));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
-            // Add the name
+            // Add the user's PC serial#
             if (UserPCSerial != null)
                 dataStream.AddRange(Encoding.UTF8.GetBytes(UserPCSerial));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
-            // Add the name
+            // Add the ticket#
             if (Ticket != null)
                 dataStream.AddRange(Encoding.UTF8.GetBytes(Ticket));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
             dataStream.AddRange(BitConverter.GetBytes(CheckedOut));
-            dataStream.AddRange(seperator);
+            //dataStream.AddRange(seperator);
 
             dataStream.AddRange(Encoding.UTF8.GetBytes(";"));
 

@@ -72,10 +72,16 @@ namespace Loaned_PC_Tracker_Server {
                     var streamIdentifier = (DataIdentifier)BitConverter.ToInt32(inStream, 0);
                     if (streamIdentifier == DataIdentifier.Request) {
                         RequestPCPacket pcRequest = new RequestPCPacket(inStream);
+                        if (pcRequest.Type == "Hotswaps") {
+                            Hotswaps = true;
+                        } else {
+                            Hotswaps = false;
+                        }
                         Site = pcRequest.SiteName;
                         siht.SendPCsForSite(this, pcRequest.SiteName, pcRequest.Type);
-                    } else if (streamIdentifier == DataIdentifier.Change) {
-
+                    } else if (streamIdentifier == DataIdentifier.Update) {
+                        PCChange changedPC = new PCChange(inStream);
+                        siht.updatePC(changedPC, this);
                     } else if(streamIdentifier == DataIdentifier.Laptop) {
 
                     }

@@ -15,6 +15,8 @@ namespace Loaned_PC_Tracker_Client {
         public string TicketNumber { get; set; }
         public bool CheckedOut;
 
+        static char[] Seperator = new char[] { ',' };
+        static char[] TrimChar = new char[] { '\0' };
         public Laptop() {
 
         }
@@ -40,7 +42,7 @@ namespace Loaned_PC_Tracker_Client {
         }
 
         public byte[] SerializeLaptop() {
-            byte[] seperator = BitConverter.GetBytes(',');
+            var seperator = BitConverter.GetBytes(',');
             List<byte> serializedPC = new List<byte>();
 
             serializedPC.AddRange(Encoding.UTF8.GetBytes(Number.ToString()));
@@ -99,26 +101,25 @@ namespace Loaned_PC_Tracker_Client {
         }
 
         public Laptop DeserializeLaptop(byte[] serializedPC) {
-            char[] seperator = new char[] { ',' };
             Laptop deserializedPC = new Laptop();
 
             string dataString = Encoding.UTF8.GetString(serializedPC);
-            string[] splitString = dataString.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
-
+            string[] splitString = dataString.Split(Seperator, StringSplitOptions.RemoveEmptyEntries);
+            
             int parsedNum;
-            if (int.TryParse(splitString[0], out parsedNum)) {
+            if (int.TryParse(splitString[0].Trim(TrimChar), out parsedNum)) {
                 deserializedPC.Number = parsedNum;
             }
 
-            deserializedPC.Serial = splitString[1];
-            deserializedPC.Brand = splitString[2];
-            deserializedPC.Model = splitString[3];
-            deserializedPC.Warranty = splitString[4];
-            deserializedPC.Username = splitString[5];
-            deserializedPC.UserPCSerial = splitString[6];
-            deserializedPC.TicketNumber = splitString[7];
+            deserializedPC.Serial = splitString[1].Trim(TrimChar);
+            deserializedPC.Brand = splitString[2].Trim(TrimChar);
+            deserializedPC.Model = splitString[3].Trim(TrimChar);
+            deserializedPC.Warranty = splitString[4].Trim(TrimChar);
+            deserializedPC.Username = splitString[5].Trim(TrimChar);
+            deserializedPC.UserPCSerial = splitString[6].Trim(TrimChar);
+            deserializedPC.TicketNumber = splitString[7].Trim(TrimChar);
 
-            if (splitString[8].ToLower() == "true") {
+            if (splitString[8].Trim(TrimChar).ToLower() == "true") {
                 deserializedPC.CheckedOut = true;
             } else {
                 deserializedPC.CheckedOut = false;
@@ -128,26 +129,24 @@ namespace Loaned_PC_Tracker_Client {
         }
 
         public Laptop DeserializeLaptop(string serializedPC) {
-            char[] seperator = new char[] { ',' };
-            char[] trim = new char[] { '\0' };
             Laptop deserializedPC = new Laptop();
             
-            string[] splitString = serializedPC.Split(seperator, StringSplitOptions.RemoveEmptyEntries);
-
+            string[] splitString = serializedPC.Split(Seperator, StringSplitOptions.RemoveEmptyEntries);
+            
             int parsedNum;
-            if (int.TryParse(splitString[0].Trim(trim), out parsedNum)) {
+            if (int.TryParse(splitString[0].Trim(TrimChar), out parsedNum)) {
                 deserializedPC.Number = parsedNum;
             }
 
-            deserializedPC.Serial = splitString[1];
-            deserializedPC.Brand = splitString[2];
-            deserializedPC.Model = splitString[3];
-            deserializedPC.Warranty = splitString[4];
-            deserializedPC.Username = splitString[5];
-            deserializedPC.UserPCSerial = splitString[6];
-            deserializedPC.TicketNumber = splitString[7];
+            deserializedPC.Serial = splitString[1].Trim(TrimChar);
+            deserializedPC.Brand = splitString[2].Trim(TrimChar);
+            deserializedPC.Model = splitString[3].Trim(TrimChar);
+            deserializedPC.Warranty = splitString[4].Trim(TrimChar);
+            deserializedPC.Username = splitString[5].Trim(TrimChar);
+            deserializedPC.UserPCSerial = splitString[6].Trim(TrimChar);
+            deserializedPC.TicketNumber = splitString[7].Trim(TrimChar);
 
-            if (splitString[8].ToLower() == "true") {
+            if (splitString[8].Trim(TrimChar).ToLower() == "true") {
                 deserializedPC.CheckedOut = true;
             } else {
                 deserializedPC.CheckedOut = false;

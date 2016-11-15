@@ -14,10 +14,6 @@ namespace Loaned_PC_Tracker_Server {
         private TcpListener serverSocket = new TcpListener(IPAddress.Any, 8888);
         private Thread AcceptClients;
         private List<Site> siteList = new List<Site>();
-        private Excel.Application excelApp = new Excel.Application() {
-            Visible = false,
-            DisplayAlerts = false
-        };
         private string FilePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\PC Tracker\\";
         private string SiteFileName = "Sites.xlsx";
         private LoadingProgress ProgressBarForm;
@@ -72,6 +68,10 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_DoWork(object sender, DoWorkEventArgs e) {
+            Excel.Application excelApp = new Excel.Application() {
+                Visible = false,
+                DisplayAlerts = false
+            };
             Excel.Workbook workbook;
             Excel.Worksheet worksheet;
             
@@ -82,6 +82,7 @@ namespace Loaned_PC_Tracker_Server {
 
             FillSiteList(localSitesNum, worksheet);
             workbook.Close();
+            excelApp.Quit();
         }
 
         /// <summary>
@@ -134,7 +135,10 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_DoWork(object sender, DoWorkEventArgs e) {
-            //string fileName = (string)e.Argument;
+            Excel.Application excelApp = new Excel.Application() {
+                Visible = false,
+                DisplayAlerts = false
+            };
             Site site = (Site)e.Argument;
             Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
             Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
@@ -149,11 +153,6 @@ namespace Loaned_PC_Tracker_Server {
                 newLaptop = getNewLaptop(index, ref currentSheet);
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
-                    /*if (newLaptop.CheckedOut) {
-                        site.CheckedOutLoaners.Add(newLaptop);
-                    } else {
-                        site.AvailableLoaners.Add(newLaptop);
-                    }*/
                     site.Loaners.Add(newLaptop);
                     bgwLoadPCs.ReportProgress(index, newLaptop.Serial);
                     prevLaptop = newLaptop;
@@ -173,17 +172,13 @@ namespace Loaned_PC_Tracker_Server {
                 newLaptop = getNewLaptop(index, ref currentSheet);
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
-                    /*if (newLaptop.CheckedOut) {
-                        site.CheckedOutHotswaps.Add(newLaptop);
-                    } else {
-                        site.AvailableHotswaps.Add(newLaptop);
-                    }*/
                     site.Hotswaps.Add(newLaptop);
                     bgwLoadPCs.ReportProgress(index, newLaptop.Serial);
                     prevLaptop = newLaptop;
                 }
             }
             workbook.Close();
+            excelApp.Quit();
         }
 
         private Laptop getNewLaptop(int index, ref Excel.Worksheet sheet) {
@@ -346,10 +341,7 @@ namespace Loaned_PC_Tracker_Server {
 
         private void SendSitesToClient(Client client) {
             UpdateStatus("sending sites to: " + client.UserName);
-
-            //NumberPacket numSites = new NumberPacket(siteList.Count);
-            //client.SendPacketToClient(numSites);
-
+            
             byte[][] serializedData = new byte[siteList.Count][];
             foreach(Site site in siteList) {
                 int index = siteList.IndexOf(site);
@@ -435,6 +427,10 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwSaveChanges_DoWork(object sender, DoWorkEventArgs e) {
+            Excel.Application excelApp = new Excel.Application() {
+                Visible = false,
+                DisplayAlerts = false
+            };
             Site site = (Site)e.Argument;
             Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
             Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
@@ -485,6 +481,7 @@ namespace Loaned_PC_Tracker_Server {
             }
             workbook.Save();
             workbook.Close();
+            excelApp.Quit();
         }
 
         /// <summary>
@@ -510,6 +507,27 @@ namespace Loaned_PC_Tracker_Server {
             ProgressBarForm.Close();
         }
 
+        public void updatePC(PCChange changedPC, Client client) {
+            Site site = siteList.Find(s => s.Name == client.Site);
+            Laptop PCtoEdit;
+
+            if (client.Hotswaps) {
+                PCtoEdit = site.Hotswaps.Find(pc => pc.Serial == changedPC.Serial);
+            } else {
+                PCtoEdit = site.Loaners.Find(pc => pc.Serial == changedPC.Serial);
+            }
+
+            string modification = string.Empty;
+            if (changedPC.CheckedOut) {
+                modification = " is checking out ";
+            } else {
+                modification = " is checking in ";
+            }
+            UpdateStatus(" >>> User " + client.UserName + modification + PCtoEdit.Serial +
+                         " from site " + client.Site);
+            PCtoEdit.MergeChanges(changedPC);
+        }
+
         /// <summary>
         ///     
         /// </summary>
@@ -527,7 +545,6 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void PCTrackerServerForm_Closing(object sender, FormClosingEventArgs e) {
-            excelApp.Quit();
             AcceptClients.Interrupt();
             serverSocket.Stop();
         }

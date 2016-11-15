@@ -175,6 +175,7 @@
             // btnCheckOut
             // 
             this.btnCheckOut.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnCheckOut.Enabled = false;
             this.btnCheckOut.Location = new System.Drawing.Point(340, 108);
             this.btnCheckOut.Name = "btnCheckOut";
             this.btnCheckOut.Size = new System.Drawing.Size(55, 50);
@@ -228,6 +229,7 @@
             // btnCheckIn
             // 
             this.btnCheckIn.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnCheckIn.Enabled = false;
             this.btnCheckIn.Location = new System.Drawing.Point(340, 163);
             this.btnCheckIn.Name = "btnCheckIn";
             this.btnCheckIn.Size = new System.Drawing.Size(55, 50);
@@ -239,6 +241,7 @@
             // btnAddNew
             // 
             this.btnAddNew.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnAddNew.Enabled = false;
             this.btnAddNew.Location = new System.Drawing.Point(340, 303);
             this.btnAddNew.Name = "btnAddNew";
             this.btnAddNew.Size = new System.Drawing.Size(55, 50);
@@ -262,6 +265,7 @@
             // btnRemoveOld
             // 
             this.btnRemoveOld.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnRemoveOld.Enabled = false;
             this.btnRemoveOld.Location = new System.Drawing.Point(340, 358);
             this.btnRemoveOld.Name = "btnRemoveOld";
             this.btnRemoveOld.Size = new System.Drawing.Size(55, 50);
@@ -273,6 +277,7 @@
             // btnEditPC
             // 
             this.btnEditPC.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnEditPC.Enabled = false;
             this.btnEditPC.Location = new System.Drawing.Point(340, 248);
             this.btnEditPC.Name = "btnEditPC";
             this.btnEditPC.Size = new System.Drawing.Size(55, 50);

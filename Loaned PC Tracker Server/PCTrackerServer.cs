@@ -364,11 +364,6 @@ namespace Loaned_PC_Tracker_Server {
             return serializedString;
         }
         
-        private void OpenUpdateStream(object parameter) {
-            var client = parameter as Client;
-            
-        }
-
         public void SendPCsForSite(Client client, string siteName, string type) {
             var dataStream = new List<byte>();
             dataStream.AddRange(BitConverter.GetBytes((int)DataIdentifier.Laptop));
@@ -461,15 +456,7 @@ namespace Loaned_PC_Tracker_Server {
                 workbook.Save();
                 workbook.Close();
             }
-            UpdateStatus("Saving completed!");
             excelApp.Quit();
-            string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-" 
-                        + DateTime.Now.Month.ToString() + " " + DateTime.Now.ToString("HH.mm.ss tt");
-            string logFile = FilePath +"logs\\log - " + date + ".txt";
-            if (!File.Exists(logFile)) {
-                File.Create(logFile).Dispose();
-            }
-            File.AppendAllText(logFile, tbLog.Text);
         }
 
         /// <summary>
@@ -487,6 +474,15 @@ namespace Loaned_PC_Tracker_Server {
                 }
                 if (!bgwSaveChanges.CancellationPending) {
                     SaveChanges();
+                    UpdateStatus("Saving completed!");
+                    UpdateStatus("Saving Log!");
+                    string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-"
+                        + DateTime.Now.Month.ToString() + " " + DateTime.Now.ToString("HH.mm.ss tt");
+                    string logFile = FilePath + "logs\\log - " + date + ".txt";
+                    if (!File.Exists(logFile)) {
+                        File.Create(logFile).Dispose();
+                    }
+                    File.AppendAllText(logFile, tbLog.Text);
                     Changed = false;
                 }
                 while (DateTime.Now.Subtract(start).Minutes < 15) {
@@ -529,6 +525,7 @@ namespace Loaned_PC_Tracker_Server {
             }
             UpdateStatus(" >>> User " + client.UserName + modification + PCtoEdit.Serial +
                          " from site " + client.Site);
+            Changed = true;
             PCtoEdit.MergeChanges(changedPC);
         }
 
@@ -538,9 +535,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void quitToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (!Changed) {
-                Close();
-            }
+            Close();
         }
 
         /// <summary>
@@ -551,8 +546,11 @@ namespace Loaned_PC_Tracker_Server {
         private void PCTrackerServerForm_Closing(object sender, FormClosingEventArgs e) {
             serverSocket.Stop();
             AcceptClients.Abort();
-            if (bgwSaveChanges.IsBusy) {
+            do {
                 bgwSaveChanges.CancelAsync();
+            } while (!bgwSaveChanges.IsBusy);
+            if (Changed) {
+                SaveChanges();
             }
             string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Month.ToString();
             string logFile = FilePath + "logs\\log - " + date + ".txt";

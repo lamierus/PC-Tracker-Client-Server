@@ -56,7 +56,7 @@ namespace Loaned_PC_Tracker_Server {
             if (!WindowDrawn) {
                 WindowDrawn = true;
                 UpdateStatus(">>>> Starting Server <<<<");
-                UpdateStatus("Loading Sites...");
+                UpdateStatus("> Loading Sites...");
                 bgwLoadSites.RunWorkerAsync();
                 ProgressBarForm = new LoadingProgress("Loading Sites List");
                 ProgressBarForm.ShowDialog();
@@ -97,7 +97,8 @@ namespace Loaned_PC_Tracker_Server {
             for (int i = 1; i <= sitesNum; i++) {
                 siteName = ((string)worksheet.Cells[i, 1].Value).Split(' ')[0];
                 siteList.Add(new Site(siteName));
-                bgwLoadSites.ReportProgress(i, siteName);
+                UpdateStatus("> " + siteName);
+                bgwLoadSites.ReportProgress(i);
             }
         }
 
@@ -111,7 +112,6 @@ namespace Loaned_PC_Tracker_Server {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
             }
             ProgressBarForm.updateProgress(e.ProgressPercentage);
-            UpdateStatus((string)e.UserState);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Loaned_PC_Tracker_Server {
         private void bgwLoadSites_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             ProgressBarForm.Close();
             foreach (Site site in siteList) {
-                UpdateStatus("Loading PCs for " + site.Name + "...");
+                UpdateStatus("> Loading PCs for " + site.Name + "...");
                 bgwLoadPCs.RunWorkerAsync(site);
                 ProgressBarForm = new LoadingProgress("Loading PC Lists");
                 ProgressBarForm.ShowDialog();
@@ -156,7 +156,8 @@ namespace Loaned_PC_Tracker_Server {
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
                     site.Loaners.Add(newLaptop);
-                    bgwLoadPCs.ReportProgress(index, newLaptop.Serial);
+                    UpdateStatus(newLaptop.Brand + " " + newLaptop.Model + " " + newLaptop.Serial);
+                    bgwLoadPCs.ReportProgress(index);
                     prevLaptop = newLaptop;
                 }
             }
@@ -175,7 +176,8 @@ namespace Loaned_PC_Tracker_Server {
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
                     site.Hotswaps.Add(newLaptop);
-                    bgwLoadPCs.ReportProgress(index, newLaptop.Serial);
+                    UpdateStatus(newLaptop.Brand + " " + newLaptop.Model + " " + newLaptop.Serial);
+                    bgwLoadPCs.ReportProgress(index);
                     prevLaptop = newLaptop;
                 }
             }
@@ -209,12 +211,9 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            UpdateStatus((string)e.UserState);
-
             if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
                 ProgressBarForm.setProgressMaximum(ProgressMax);
             }
-
             ProgressBarForm.updateProgress(e.ProgressPercentage);
         }
 
@@ -313,7 +312,7 @@ namespace Loaned_PC_Tracker_Server {
         /// </summary>
         private void openConnection() {
             serverSocket.Start();
-            UpdateStatus(" >> Server Started");
+            UpdateStatus(">> Server Started");
 
             AcceptClients = new Thread(ConnectClient);
             AcceptClients.Start(serverSocket);
@@ -332,17 +331,17 @@ namespace Loaned_PC_Tracker_Server {
                     clientSocket = serverSocket.AcceptTcpClient();
                     Client newClient = new Client(clientSocket, this);
                     ClientList.Add(newClient);
-                    UpdateStatus("Client " + newClient.UserName + " connected!");
+                    UpdateStatus(">> Client " + newClient.UserName + " connected!");
                     SendSitesToClient(newClient);
                 } catch (Exception ex) {
-                    UpdateStatus(ex.Message);
+                    UpdateStatus("XXX " + ex.Message);
                     break;
                 }
             }
         }
 
         private void SendSitesToClient(Client client) {
-            UpdateStatus("sending sites to: " + client.UserName);
+            UpdateStatus(">>> Sending sites to: " + client.UserName);
             
             byte[][] serializedData = new byte[siteList.Count][];
             foreach(Site site in siteList) {
@@ -378,6 +377,7 @@ namespace Loaned_PC_Tracker_Server {
                     dataStream.AddRange(pc.SerializeLaptop());
                 }
             }
+            UpdateStatus(">>> Sending " + type + " from " + siteName + " to " + client.UserName);
             client.StreamDataToClient(dataStream.ToArray(), this);
         }
 
@@ -386,11 +386,12 @@ namespace Loaned_PC_Tracker_Server {
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="flag"></param>
-        public void Broadcast(PCPacket packet, bool flag = true) {
+        public void BroadcastUpdate(PCPacket packet, bool flag = true) {
             var serializedData = new List<byte>();
             serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Broadcast));
             //TODO: add code to create the update to be broadcasted to each client
             foreach (Client c in ClientList) {
+                UpdateStatus(">>> Sending update to " + c.UserName);
                 c.StreamDataToClient(serializedData.ToArray(), this);
             }
         }
@@ -415,48 +416,41 @@ namespace Loaned_PC_Tracker_Server {
                 DisplayAlerts = false
             };
             foreach (Site site in siteList) {
-                UpdateStatus("Saving " + site.Name + "'s PC lists");
+                UpdateStatus("<< Saving " + site.Name + "'s PC lists");
                 Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
-                Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
 
-                int lastrow = 2;
-                foreach (Laptop PC in site.Loaners) {
-                    currentSheet.Rows[lastrow].Delete();
-                    currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
-                    currentSheet.Cells[lastrow, 2].Value = PC.Serial;
-                    currentSheet.Cells[lastrow, 3].Value = PC.Brand;
-                    currentSheet.Cells[lastrow, 4].Value = PC.Model;
-                    currentSheet.Cells[lastrow, 5].Value = PC.Warranty;
-                    currentSheet.Cells[lastrow, 6].Value = PC.Username;
-                    currentSheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
-                    currentSheet.Cells[lastrow, 8].Value = PC.TicketNumber;
-                    currentSheet.Cells[lastrow, 9].Value = PC.CheckedOut;
-                    lastrow++;
-                }
-                workbook.Save();
-                workbook.Close();
+                FillSheet(site.Loaners, workbook);
 
                 workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Hotswaps.xlsx");
-                currentSheet = workbook.Worksheets.Item[1];
 
-                lastrow = 2;
-                foreach (Laptop PC in site.Hotswaps) {
-                    currentSheet.Rows[lastrow].Delete();
-                    currentSheet.Cells[lastrow, 1].Value = PC.Number.ToString();
-                    currentSheet.Cells[lastrow, 2].Value = PC.Serial;
-                    currentSheet.Cells[lastrow, 3].Value = PC.Brand;
-                    currentSheet.Cells[lastrow, 4].Value = PC.Model;
-                    currentSheet.Cells[lastrow, 5].Value = PC.Warranty;
-                    currentSheet.Cells[lastrow, 6].Value = PC.Username;
-                    currentSheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
-                    currentSheet.Cells[lastrow, 8].Value = PC.TicketNumber;
-                    currentSheet.Cells[lastrow, 9].Value = PC.CheckedOut;
-                    lastrow++;
-                }
-                workbook.Save();
-                workbook.Close();
+                FillSheet(site.Hotswaps, workbook);
             }
             excelApp.Quit();
+        }
+
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="PCs"></param>
+        /// <param name="workbook"></param>
+        private void FillSheet(List<Laptop> PCs, Excel.Workbook workbook) {
+            Excel.Worksheet sheet = workbook.Worksheets.Item[1];
+            int lastrow = 2;
+            foreach (Laptop PC in PCs) {
+                sheet.Rows[lastrow].Delete();
+                sheet.Cells[lastrow, 1].Value = PC.Number.ToString();
+                sheet.Cells[lastrow, 2].Value = PC.Serial;
+                sheet.Cells[lastrow, 3].Value = PC.Brand;
+                sheet.Cells[lastrow, 4].Value = PC.Model;
+                sheet.Cells[lastrow, 5].Value = PC.Warranty;
+                sheet.Cells[lastrow, 6].Value = PC.Username;
+                sheet.Cells[lastrow, 7].Value = PC.UserPCSerial;
+                sheet.Cells[lastrow, 8].Value = PC.TicketNumber;
+                sheet.Cells[lastrow, 9].Value = PC.CheckedOut;
+                lastrow++;
+            }
+            workbook.Save();
+            workbook.Close();
         }
 
         /// <summary>
@@ -474,8 +468,8 @@ namespace Loaned_PC_Tracker_Server {
                 }
                 if (!bgwSaveChanges.CancellationPending) {
                     SaveChanges();
-                    UpdateStatus("Saving completed!");
-                    UpdateStatus("Saving Log!");
+                    UpdateStatus("<< Saving completed!");
+                    UpdateStatus("<< Saving Log!");
                     string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-"
                         + DateTime.Now.Month.ToString() + " " + DateTime.Now.ToString("HH.mm.ss tt");
                     string logFile = FilePath + "logs\\log - " + date + ".txt";
@@ -523,7 +517,7 @@ namespace Loaned_PC_Tracker_Server {
             } else {
                 modification = " is checking in ";
             }
-            UpdateStatus(" >>> User " + client.UserName + modification + PCtoEdit.Serial +
+            UpdateStatus(">>> User " + client.UserName + modification + PCtoEdit.Serial +
                          " from site " + client.Site);
             Changed = true;
             PCtoEdit.MergeChanges(changedPC);
@@ -571,23 +565,24 @@ namespace Loaned_PC_Tracker_Server {
             serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Broadcast));
             serializedData.AddRange(SerializeString(test));
             foreach (Client c in ClientList) {
+                UpdateStatus(">> Sending Test Broadcast to " + c.UserName);
                 c.StreamDataToClient(serializedData.ToArray(), this);
             }
         }
+
         /// <summary>
         ///     
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-
         private void autoSaveToolStripMenuItem_Click(object sender, EventArgs e) {
             if (autoSaveToolStripMenuItem.Checked) {
-                UpdateStatus(" ** AutoSave Enabled ** ");
+                UpdateStatus("** AutoSave Enabled **");
                 if (!bgwSaveChanges.IsBusy) {
                     bgwSaveChanges.RunWorkerAsync();
                 }
             } else {
-                UpdateStatus(" ** Warning: AutoSave Disabled ** ");
+                UpdateStatus("** Warning: AutoSave Disabled **");
                 bgwSaveChanges.CancelAsync();
             }
         }

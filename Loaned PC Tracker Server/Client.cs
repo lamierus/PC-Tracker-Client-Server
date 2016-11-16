@@ -44,7 +44,7 @@ namespace Loaned_PC_Tracker_Server {
                     UserName = "Client #" + UserCount++.ToString();
                 }
             } catch (Exception ex) {
-                siht.UpdateStatus(ex.Message);
+                siht.UpdateStatus("XXX " + ex.Message);
                 return false;
             }
             bgwWaitForPCRequests.RunWorkerAsync(siht);
@@ -53,18 +53,18 @@ namespace Loaned_PC_Tracker_Server {
 
         public void StreamDataToClient(byte[] dataToSend, PCTrackerServerForm siht) {
             try {
-                siht.UpdateStatus(" >> Sending data to " + UserName);
+                //siht.UpdateStatus(" >> Sending data to " + UserName);
                 NetworkStream outStream = ClientSocket.GetStream();
                 outStream.Write(dataToSend, 0, dataToSend.Length);
                 outStream.Flush();
             } catch (Exception ex) {
-                siht.UpdateStatus(ex.Message);
+                siht.UpdateStatus("XXX " + ex.Message);
             }
         }
 
         private void bgwWaitForPCRequests_DoWork(object sender, DoWorkEventArgs e) {
             var siht = e.Argument as PCTrackerServerForm;
-            siht.UpdateStatus("Awaiting requests from " + UserName);
+            siht.UpdateStatus("> Awaiting requests from " + UserName);
             byte[] inStream = new byte[10025];
             while (true) {
                 try {
@@ -86,7 +86,7 @@ namespace Loaned_PC_Tracker_Server {
 
                     }
                 } catch (Exception ex) {
-                    siht.UpdateStatus(UserName + " disconnected: " + ex.Message);
+                    siht.UpdateStatus("<<< " + UserName + " disconnected: " + ex.Message);
                     if (!ClientSocket.Connected) {
                         break;
                     }

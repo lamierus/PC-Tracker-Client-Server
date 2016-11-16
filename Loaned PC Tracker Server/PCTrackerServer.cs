@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -54,8 +55,8 @@ namespace Loaned_PC_Tracker_Server {
         private void PCTrackerServerForm_Activated(object sender, EventArgs e) {
             if (!WindowDrawn) {
                 WindowDrawn = true;
-                tbLog.AppendText("Loading Sites...");
-                tbLog.AppendText(Environment.NewLine);
+                UpdateStatus(">>>> Starting Server <<<<");
+                UpdateStatus("Loading Sites...");
                 bgwLoadSites.RunWorkerAsync();
                 ProgressBarForm = new LoadingProgress("Loading Sites List");
                 ProgressBarForm.ShowDialog();
@@ -462,6 +463,13 @@ namespace Loaned_PC_Tracker_Server {
             }
             UpdateStatus("Saving completed!");
             excelApp.Quit();
+            string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-" 
+                        + DateTime.Now.Month.ToString() + " " + DateTime.Now.ToString("HH.mm.ss tt");
+            string logFile = FilePath +"logs\\log - " + date + ".txt";
+            if (!File.Exists(logFile)) {
+                File.Create(logFile).Dispose();
+            }
+            File.AppendAllText(logFile, tbLog.Text);
         }
 
         /// <summary>
@@ -472,35 +480,37 @@ namespace Loaned_PC_Tracker_Server {
         private void bgwSaveChanges_DoWork(object sender, DoWorkEventArgs e) {
             while (!bgwSaveChanges.CancellationPending) {
                 DateTime start = DateTime.Now;
-                //while (DateTime.Now.Subtract(start).Seconds < 20) { }
-                while (DateTime.Now.Subtract(start).Minutes < 30) { }
-                SaveChanges();
+                while (DateTime.Now.Subtract(start).Minutes < 15) {
+                    if (bgwSaveChanges.CancellationPending) {
+                        break;
+                    }
+                }
+                if (!bgwSaveChanges.CancellationPending) {
+                    SaveChanges();
+                    Changed = false;
+                }
+                while (DateTime.Now.Subtract(start).Minutes < 15) {
+                    if (bgwSaveChanges.CancellationPending) {
+                        break;
+                    }        
+                }
             }
         }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void bgwSaveChanges_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            UpdateStatus((string)e.UserState);
-            if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
-                ProgressBarForm.setProgressMaximum(ProgressMax);
-            }
-            ProgressBarForm.updateProgress(e.ProgressPercentage);
-        }
-
+        
         /// <summary>
         ///     
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwSaveChanges_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
-            Changed = false;
-            ProgressBarForm.Close();
+            
         }
 
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="changedPC"></param>
+        /// <param name="client"></param>
         public void updatePC(PCChange changedPC, Client client) {
             Site site = siteList.Find(s => s.Name == client.Site);
             Laptop PCtoEdit;
@@ -539,10 +549,24 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void PCTrackerServerForm_Closing(object sender, FormClosingEventArgs e) {
-            AcceptClients.Interrupt();
             serverSocket.Stop();
+            AcceptClients.Abort();
+            if (bgwSaveChanges.IsBusy) {
+                bgwSaveChanges.CancelAsync();
+            }
+            string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Month.ToString();
+            string logFile = FilePath + "logs\\log - " + date + ".txt";
+            if (!File.Exists(logFile)) {
+                File.Create(logFile).Dispose();
+            }
+            File.AppendAllText(logFile, tbLog.Text);
         }
 
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void testBroadcastToolStripMenuItem_Click(object sender, EventArgs e) {
             string test = "abcdefghijklmnopqrstuvwxyz1234567890-=[]\\',./`ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}|:\"<>?~";
             var serializedData = new List<byte>();
@@ -552,6 +576,11 @@ namespace Loaned_PC_Tracker_Server {
                 c.StreamDataToClient(serializedData.ToArray(), this);
             }
         }
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
 
         private void autoSaveToolStripMenuItem_Click(object sender, EventArgs e) {
             if (autoSaveToolStripMenuItem.Checked) {
@@ -563,11 +592,6 @@ namespace Loaned_PC_Tracker_Server {
                 UpdateStatus(" ** Warning: AutoSave Disabled ** ");
                 bgwSaveChanges.CancelAsync();
             }
-        }
-
-        private void testSerialzePCToolStripMenuItem_Click(object sender, EventArgs e) {
-            Laptop test = new Laptop(2, "HP", "123", "456", "expired");
-            byte [] serialzedPC = test.SerializeLaptop();
         }
     }
 }

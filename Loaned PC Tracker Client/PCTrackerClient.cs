@@ -454,10 +454,13 @@ namespace Loaned_PC_Tracker_Client {
                             UpdateStatus(s);
                         }
                     } else if (streamIdentifier == DataIdentifier.Laptop) {
-                        SplitPCStream(inStream);
+                        SplitAndAddPCStream(inStream);
+                        bgwAwaitBroadcasts.ReportProgress(0);
+                    } else if (streamIdentifier == DataIdentifier.Update) {
+                        Laptop updatedPC = new Laptop(inStream.Skip(4).ToArray());
+                        UpdateLaptop(updatedPC);
                         bgwAwaitBroadcasts.ReportProgress(0);
                     } else if (streamIdentifier == DataIdentifier.Null) {
-
                     }
                 } catch (Exception ex) {
                     UpdateStatus(ex.Message);
@@ -467,8 +470,11 @@ namespace Loaned_PC_Tracker_Client {
             }
         }
 
-        //private List<Laptop> SplitPCStream(byte[] dataStream) {
-        private void SplitPCStream(byte[] dataStream) {
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="dataStream"></param>
+        private void SplitAndAddPCStream(byte[] dataStream) {
             var seperator = new char[] { ';' };
             var stringStream = Encoding.UTF8.GetString(dataStream);
             var splitStream = stringStream.Split(seperator);
@@ -498,12 +504,40 @@ namespace Loaned_PC_Tracker_Client {
         /// <summary>
         ///     
         /// </summary>
+        /// <param name="newLaptop"></param>
+        private void UpdateLaptop(Laptop updatedPC) {
+            if (InvokeRequired) {
+                // We're not in the UI thread, so we need to call BeginInvoke
+                BeginInvoke(new LaptopParameterDelegate(UpdateLaptop), new object[] { updatedPC });
+                return;
+            }
+            // Must be on the UI thread if we've got this far
+            if (!CurrentlyAvailable.Union(CheckedOut).Contains(updatedPC)) {
+                if (updatedPC.CheckedOut) {
+                    CheckedOut.Add(updatedPC);
+                } else {
+                    CurrentlyAvailable.Add(updatedPC);
+                }
+            } else if (CurrentlyAvailable.Contains(updatedPC)) {
+                CurrentlyAvailable.Remove(updatedPC);
+                CheckedOut.Add(updatedPC);
+            } else {
+                CheckedOut.Remove(updatedPC);
+                CurrentlyAvailable.Add(updatedPC);
+            }
+        }
+
+        /// <summary>
+        ///     
+        /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwAwaitBroadcasts_ProgressChanged(object sender, ProgressChangedEventArgs e) {
             CurrentlyAvailable.ResetBindings();
             CheckedOut.ResetBindings();
-            ProgressBarForm.Close();
+            if (!ProgressBarForm.IsDisposed) {
+                ProgressBarForm.Close();
+            }
         }
 
         /// <summary>

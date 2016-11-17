@@ -39,6 +39,10 @@ namespace Loaned_PC_Tracker_Server {
             CheckedOut = checkedOut;
         }
 
+        public Laptop(byte[] dataStream) {
+            DeserializeLaptop(dataStream);
+        }
+
         public byte[] SerializeLaptop() {
             byte[] seperator = BitConverter.GetBytes(',');
             List<byte> serializedPC = new List<byte>();
@@ -153,7 +157,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         public bool Equals(Laptop other) {
-            if (other == null) {
+            if (other == null || other.Serial == null) {
                 return false;
             }
             return (Serial.Equals(other.Serial));

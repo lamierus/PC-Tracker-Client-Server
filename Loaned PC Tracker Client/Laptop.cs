@@ -17,6 +17,7 @@ namespace Loaned_PC_Tracker_Client {
 
         static char[] Seperator = new char[] { ',' };
         static char[] TrimChar = new char[] { '\0' };
+
         public Laptop() {
 
         }
@@ -39,6 +40,10 @@ namespace Loaned_PC_Tracker_Client {
             UserPCSerial = userSerialNumber;
             TicketNumber = ticketNumber;
             CheckedOut = checkedOut;
+        }
+
+        public Laptop(byte[] dataStream) {
+            DeserializeLaptop(dataStream);
         }
 
         public byte[] SerializeLaptop() {
@@ -173,7 +178,7 @@ namespace Loaned_PC_Tracker_Client {
         }
 
         public bool Equals(Laptop other) {
-            if (other == null) {
+            if (other == null || other.Serial == null) {
                 return false;
             }
             return (Serial.Equals(other.Serial));

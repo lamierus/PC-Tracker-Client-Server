@@ -15,14 +15,14 @@ namespace Loaned_PC_Tracker_Server {
         private TcpListener serverSocket = new TcpListener(IPAddress.Any, 8888);
         private Thread AcceptClients;
         private List<Site> siteList = new List<Site>();
-        private string FilePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\PC Tracker\\";
+        //private string FilePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\PC Tracker\\";
+        private string FilePath = "C:\\Users\\Tech\\PC Tracker\\";
         private string SiteFileName = "Sites.xlsx";
         private LoadingProgress ProgressBarForm;
         private int ProgressMax;
         private bool Changed;
         private bool WindowDrawn;
         private List<Client> ClientList = new List<Client>();
-        private List<Thread> ClientThreadList = new List<Thread>();
 
         private delegate void StringParameterDelegate(string value);
 
@@ -31,7 +31,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     update the tbLog.Text with any server messages, from any and all threads
         /// </summary>
         /// <param name="message"></param>
         public void UpdateStatus(string message) {
@@ -47,8 +47,12 @@ namespace Loaned_PC_Tracker_Server {
             }
         }
 
+        public void RemoveClient(Client client) {
+            ClientList.Remove(client);
+        }
+
         /// <summary>
-        ///     
+        ///     start loading up after the windows draws on the desktop
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -64,7 +68,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     open and read the sites from the requested site file
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -87,7 +91,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     load the sites into the siteList variable
         /// </summary>
         /// <param name="sitesNum"></param>
         /// <param name="worksheet"></param>
@@ -103,7 +107,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     update the progress bar
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -115,19 +119,26 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     after filling the siteList variable, this will go on to load up the PCs from 
+        ///     each site, both:
+        ///     Hotswaps (temporary shell replacement) and
+        ///     Loaners (temporary use PC while permanent PC is being worked on)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             ProgressBarForm.Close();
+            //load up the PC's for each site
             foreach (Site site in siteList) {
                 UpdateStatus("> Loading PCs for " + site.Name + "...");
+                //sends the current site object to the backgroundworker as an argument
                 bgwLoadPCs.RunWorkerAsync(site);
                 ProgressBarForm = new LoadingProgress("Loading PC Lists");
                 ProgressBarForm.ShowDialog();
             }
-            bgwSaveChanges.RunWorkerAsync();
+            //this begins the Asynchronous thread for the auto-save feature.
+            bgwAutoSave.RunWorkerAsync();
+            //this goes on to open the server socket for on-coming user connections.
             openConnection();
         }
         
@@ -141,8 +152,27 @@ namespace Loaned_PC_Tracker_Server {
                 Visible = false,
                 DisplayAlerts = false
             };
+
+            //interprets the argument sent to the backgroundworker as a Site object
             Site site = (Site)e.Argument;
+
             Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
+            addLaptopstoSite(false, site, workbook);
+
+            workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Hotswaps.xlsx");
+            addLaptopstoSite(true, site, workbook);
+
+            excelApp.Quit();
+        }
+
+        /// <summary>
+        ///     opens the worksheet and gets the laptop information to be added to either
+        ///     the site's hotswap or loaner list
+        /// </summary>
+        /// <param name="hotswaps"></param>
+        /// <param name="site"></param>
+        /// <param name="workbook"></param>
+        private void addLaptopstoSite(bool hotswaps, Site site, Excel.Workbook workbook) {
             Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
 
             int lastRow = getMaxRow(currentSheet);
@@ -155,36 +185,27 @@ namespace Loaned_PC_Tracker_Server {
                 newLaptop = getNewLaptop(index, ref currentSheet);
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
-                    site.Loaners.Add(newLaptop);
+                    if (hotswaps) {
+                        site.Hotswaps.Add(newLaptop);
+                    } else {
+                        site.Loaners.Add(newLaptop);
+                    }
                     UpdateStatus(newLaptop.Brand + " " + newLaptop.Model + " " + newLaptop.Serial);
                     bgwLoadPCs.ReportProgress(index);
                     prevLaptop = newLaptop;
                 }
             }
             workbook.Close();
-
-            workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Hotswaps.xlsx");
-            currentSheet = workbook.Worksheets.Item[1];
-
-            lastRow = getMaxRow(currentSheet);
-            ProgressMax = lastRow;
-
-            prevLaptop = new Laptop();
-
-            for (int index = 2; index <= lastRow; index++) {
-                newLaptop = getNewLaptop(index, ref currentSheet);
-                //this verifies that the newly created laptop is not a copy of the previous one
-                if (newLaptop != prevLaptop) {
-                    site.Hotswaps.Add(newLaptop);
-                    UpdateStatus(newLaptop.Brand + " " + newLaptop.Model + " " + newLaptop.Serial);
-                    bgwLoadPCs.ReportProgress(index);
-                    prevLaptop = newLaptop;
-                }
-            }
-            workbook.Close();
-            excelApp.Quit();
         }
 
+        /// <summary>
+        ///     reads each column of the indexed row to create a laptop object
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="sheet"></param>
+        /// <returns>
+        ///     a new Laptop object with information read from the sheet
+        /// </returns>
         private Laptop getNewLaptop(int index, ref Excel.Worksheet sheet) {
             int lastCol = getMaxCol(sheet);
             // this array holds all of the information from each line of the excel sheet
@@ -206,7 +227,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     updates the progress bar of the dialog
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -218,7 +239,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     closes the progress bar dialog, once completed.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -259,10 +280,11 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="value"></param>
         /// <returns> 0 if the cell is blank or the object doesn't parse, otherwise returns an int value</returns>
         private int intCheckNull(object value) {
-            int parsedNum;
             if (value == null) {
                 return 0;
             }
+            //the following will parse the value out to make sure it is a number, before assigning and returning
+            int parsedNum;
             if (int.TryParse(value.ToString(), out parsedNum)) {
                 return parsedNum;
             } else {
@@ -308,7 +330,7 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     Starts the server socket and creates a thread to continually accept new connections
         /// </summary>
         private void openConnection() {
             serverSocket.Start();
@@ -326,12 +348,16 @@ namespace Loaned_PC_Tracker_Server {
         private void ConnectClient(object parameter) {
             var serverSocket = parameter as TcpListener;
             var clientSocket = new TcpClient();
+            //create a permanent loop to accept clients, while the server is active
             while (true) {
                 try {
                     clientSocket = serverSocket.AcceptTcpClient();
+                    //create the client object, once a connection is accepted
                     Client newClient = new Client(clientSocket, this);
+                    //add that new Client to the List of Client objects
                     ClientList.Add(newClient);
                     UpdateStatus(">> Client " + newClient.UserName + " connected!");
+                    //send the sites to the client, after connection is established
                     SendSitesToClient(newClient);
                 } catch (Exception ex) {
                     UpdateStatus("XXX " + ex.Message);
@@ -340,33 +366,55 @@ namespace Loaned_PC_Tracker_Server {
             }
         }
 
+        /// <summary>
+        ///     gathers the site list, serializes the data and sends it to the client
+        /// </summary>
+        /// <param name="client"></param>
         private void SendSitesToClient(Client client) {
             UpdateStatus(">>> Sending sites to: " + client.UserName);
             
+            //create a jagged array to store each serialzed site name
             byte[][] serializedData = new byte[siteList.Count][];
             foreach(Site site in siteList) {
                 int index = siteList.IndexOf(site);
                 serializedData[index] = new byte[site.Name.Length];
                 serializedData[index] = SerializeString(site.Name);
             }
+
             List<byte> fullDataStream = new List<byte>();
-            fullDataStream.AddRange(BitConverter.GetBytes((int)DataIdentifier.Site));
+            //add the serialized data for each site to a List to be sent to the client
             foreach (byte[] array in serializedData) {
                 fullDataStream.AddRange(array);
             }
             client.StreamDataToClient(fullDataStream.ToArray(), this);
         }
 
+        /// <summary>
+        ///     serialize a string for data transfer
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns>
+        ///     a byte array with the data of the string
+        /// </returns>
         private byte[] SerializeString(string s) {
             string stringToSerialize = s.Insert(s.Length, ";");
             byte[] serializedString = Encoding.UTF8.GetBytes(stringToSerialize);
             return serializedString;
         }
         
+        /// <summary>
+        ///     gathers the data of all the requested PCs of the requested type and
+        ///     sends them to the client
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="siteName"></param>
+        /// <param name="type"></param>
         public void SendPCsForSite(Client client, string siteName, string type) {
             var dataStream = new List<byte>();
+            //add the identifier to the data stream
             dataStream.AddRange(BitConverter.GetBytes((int)DataIdentifier.Laptop));
             dataStream.AddRange(BitConverter.GetBytes(';'));
+            //get the requested site from the List
             Site site = siteList.Find(s => s.Name == siteName);
             if (type == "Hotswaps") {
                 foreach (Laptop pc in site.Hotswaps) {
@@ -382,21 +430,6 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     sends out the broadcast to each client that is connected.
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="flag"></param>
-        public void BroadcastUpdate(PCPacket packet, bool flag = true) {
-            var serializedData = new List<byte>();
-            serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Broadcast));
-            //TODO: add code to create the update to be broadcasted to each client
-            foreach (Client c in ClientList) {
-                UpdateStatus(">>> Sending update to " + c.UserName);
-                c.StreamDataToClient(serializedData.ToArray(), this);
-            }
-        }
-
-        /// <summary>
         ///     
         /// </summary>
         /// <param name="sender"></param>
@@ -406,7 +439,8 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     this will iterate through each site and send that site's Lists for 
+        ///     saving in the spreadsheets
         /// </summary>
         /// <param name="siteName"></param>
         /// <param name="hotswaps"></param>
@@ -415,6 +449,7 @@ namespace Loaned_PC_Tracker_Server {
                 Visible = false,
                 DisplayAlerts = false
             };
+
             foreach (Site site in siteList) {
                 UpdateStatus("<< Saving " + site.Name + "'s PC lists");
                 Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
@@ -426,10 +461,11 @@ namespace Loaned_PC_Tracker_Server {
                 FillSheet(site.Hotswaps, workbook);
             }
             excelApp.Quit();
+            Changed = false;
         }
 
         /// <summary>
-        ///     
+        ///     read each part of each laptop and place it in the spreadsheets
         /// </summary>
         /// <param name="PCs"></param>
         /// <param name="workbook"></param>
@@ -454,19 +490,24 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     
+        ///     runs the save function at set intervals
+        ///     You'll notice a lot of things hinge on whether or not there is a cancellation
+        ///     pending, this is so when the user turns the auto-save feature off, it will 
+        ///     just move it's way out of the method without running the save feature again.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void bgwSaveChanges_DoWork(object sender, DoWorkEventArgs e) {
-            while (!bgwSaveChanges.CancellationPending) {
+        private void bgwAutoSave_DoWork(object sender, DoWorkEventArgs e) {
+            UpdateStatus("** AutoSave Enabled **");
+            while (!bgwAutoSave.CancellationPending) {
                 DateTime start = DateTime.Now;
-                while (DateTime.Now.Subtract(start).Minutes < 15) {
-                    if (bgwSaveChanges.CancellationPending) {
+                //TODO: add the ability for the user to set the interval
+                while (DateTime.Now.Subtract(start).Minutes < 30) {
+                    if (bgwAutoSave.CancellationPending) {
                         break;
                     }
                 }
-                if (!bgwSaveChanges.CancellationPending) {
+                if (!bgwAutoSave.CancellationPending) {
                     SaveChanges();
                     UpdateStatus("<< Saving completed!");
                     UpdateStatus("<< Saving Log!");
@@ -477,12 +518,6 @@ namespace Loaned_PC_Tracker_Server {
                         File.Create(logFile).Dispose();
                     }
                     File.AppendAllText(logFile, tbLog.Text);
-                    Changed = false;
-                }
-                while (DateTime.Now.Subtract(start).Minutes < 15) {
-                    if (bgwSaveChanges.CancellationPending) {
-                        break;
-                    }        
                 }
             }
         }
@@ -492,8 +527,8 @@ namespace Loaned_PC_Tracker_Server {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void bgwSaveChanges_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
-            
+        private void bgwAutoSave_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
+            UpdateStatus("** Warning: AutoSave Disabled **");
         }
 
         /// <summary>
@@ -521,6 +556,45 @@ namespace Loaned_PC_Tracker_Server {
                          " from site " + client.Site);
             Changed = true;
             PCtoEdit.MergeChanges(changedPC);
+
+            UpdateStatus(">> Sending updates to other clients connected to " + client.Site);
+            //BroadcastUpdateToSite("> User " + client.UserName + modification + PCtoEdit.Serial, client.Site);
+            BroadcastUpdateToSite(PCtoEdit, client);
+        }
+
+        /// <summary>
+        ///     sends out the received message to each client that is connected.
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="flag"></param>
+        public void BroadcastUpdateToSite(string broadcastMsg, Client client) {
+            var serializedData = new List<byte>();
+            serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Broadcast));
+            serializedData.AddRange(BitConverter.GetBytes(';'));
+            serializedData.AddRange(SerializeString(broadcastMsg));
+            foreach (Client c in ClientList.FindAll(c => c.Site == client.Site)) {
+                if(c != client) {
+                    UpdateStatus(">>> Sending update broadcast to " + c.UserName);
+                    c.StreamDataToClient(serializedData.ToArray(), this);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     sends out the broadcast to each client that is connected.
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="flag"></param>
+        public void BroadcastUpdateToSite(Laptop updatedPC, Client client) {
+            var serializedData = new List<byte>();
+            serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Update));
+            serializedData.AddRange(updatedPC.SerializeLaptop());
+            foreach (Client c in ClientList.FindAll(c => c.Site == client.Site)) {
+                if (c != client) {
+                    UpdateStatus(">>> Sending update broadcast to " + c.UserName);
+                    c.StreamDataToClient(serializedData.ToArray(), this);
+                }
+            }
         }
 
         /// <summary>
@@ -541,8 +615,8 @@ namespace Loaned_PC_Tracker_Server {
             serverSocket.Stop();
             AcceptClients.Abort();
             do {
-                bgwSaveChanges.CancelAsync();
-            } while (!bgwSaveChanges.IsBusy);
+                bgwAutoSave.CancelAsync();
+            } while (!bgwAutoSave.IsBusy);
             if (Changed) {
                 SaveChanges();
             }
@@ -577,13 +651,11 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="e"></param>
         private void autoSaveToolStripMenuItem_Click(object sender, EventArgs e) {
             if (autoSaveToolStripMenuItem.Checked) {
-                UpdateStatus("** AutoSave Enabled **");
-                if (!bgwSaveChanges.IsBusy) {
-                    bgwSaveChanges.RunWorkerAsync();
+                if (!bgwAutoSave.IsBusy) {
+                    bgwAutoSave.RunWorkerAsync();
                 }
             } else {
-                UpdateStatus("** Warning: AutoSave Disabled **");
-                bgwSaveChanges.CancelAsync();
+                bgwAutoSave.CancelAsync();
             }
         }
     }

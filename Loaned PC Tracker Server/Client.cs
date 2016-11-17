@@ -88,6 +88,7 @@ namespace Loaned_PC_Tracker_Server {
                 } catch (Exception ex) {
                     siht.UpdateStatus("<<< " + UserName + " disconnected: " + ex.Message);
                     if (!ClientSocket.Connected) {
+                        siht.RemoveClient(this);
                         break;
                     }
                 }

@@ -25,7 +25,7 @@
         private void InitializeComponent() {
             this.bgwLoadSites = new System.ComponentModel.BackgroundWorker();
             this.bgwLoadPCs = new System.ComponentModel.BackgroundWorker();
-            this.bgwSaveChanges = new System.ComponentModel.BackgroundWorker();
+            this.bgwAutoSave = new System.ComponentModel.BackgroundWorker();
             this.tbLog = new System.Windows.Forms.TextBox();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,10 +55,10 @@
             // 
             // bgwSaveChanges
             // 
-            this.bgwSaveChanges.WorkerReportsProgress = true;
-            this.bgwSaveChanges.WorkerSupportsCancellation = true;
-            this.bgwSaveChanges.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwSaveChanges_DoWork);
-            this.bgwSaveChanges.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwSaveChanges_RunWorkerCompleted);
+            this.bgwAutoSave.WorkerReportsProgress = true;
+            this.bgwAutoSave.WorkerSupportsCancellation = true;
+            this.bgwAutoSave.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgwAutoSave_DoWork);
+            this.bgwAutoSave.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwAutoSave_RunWorkerCompleted);
             // 
             // tbLog
             // 
@@ -158,7 +158,7 @@
 
         private System.ComponentModel.BackgroundWorker bgwLoadSites;
         private System.ComponentModel.BackgroundWorker bgwLoadPCs;
-        private System.ComponentModel.BackgroundWorker bgwSaveChanges;
+        private System.ComponentModel.BackgroundWorker bgwAutoSave;
         private System.Windows.Forms.TextBox tbLog;
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;

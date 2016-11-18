@@ -105,32 +105,28 @@ namespace Loaned_PC_Tracker_Client {
             return serializedPC.ToArray();
         }
 
-        public Laptop DeserializeLaptop(byte[] serializedPC) {
-            Laptop deserializedPC = new Laptop();
-
+        private void DeserializeLaptop(byte[] serializedPC) {
             string dataString = Encoding.UTF8.GetString(serializedPC);
             string[] splitString = dataString.Split(Seperator, StringSplitOptions.RemoveEmptyEntries);
             
             int parsedNum;
             if (int.TryParse(splitString[0].Trim(TrimChar), out parsedNum)) {
-                deserializedPC.Number = parsedNum;
+                Number = parsedNum;
             }
 
-            deserializedPC.Serial = splitString[1].Trim(TrimChar);
-            deserializedPC.Brand = splitString[2].Trim(TrimChar);
-            deserializedPC.Model = splitString[3].Trim(TrimChar);
-            deserializedPC.Warranty = splitString[4].Trim(TrimChar);
-            deserializedPC.Username = splitString[5].Trim(TrimChar);
-            deserializedPC.UserPCSerial = splitString[6].Trim(TrimChar);
-            deserializedPC.TicketNumber = splitString[7].Trim(TrimChar);
+            Serial = splitString[1].Trim(TrimChar);
+            Brand = splitString[2].Trim(TrimChar);
+            Model = splitString[3].Trim(TrimChar);
+            Warranty = splitString[4].Trim(TrimChar);
+            Username = splitString[5].Trim(TrimChar);
+            UserPCSerial = splitString[6].Trim(TrimChar);
+            TicketNumber = splitString[7].Trim(TrimChar);
 
             if (splitString[8].Trim(TrimChar).ToLower() == "true") {
-                deserializedPC.CheckedOut = true;
+                CheckedOut = true;
             } else {
-                deserializedPC.CheckedOut = false;
+                CheckedOut = false;
             }
-
-            return deserializedPC;
         }
 
         public Laptop DeserializeLaptop(string serializedPC) {

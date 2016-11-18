@@ -52,7 +52,7 @@
             this.lblLoanerNumber.Location = new System.Drawing.Point(12, 10);
             this.lblLoanerNumber.Name = "lblLoanerNumber";
             this.lblLoanerNumber.Size = new System.Drawing.Size(104, 16);
-            this.lblLoanerNumber.TabIndex = 0;
+            this.lblLoanerNumber.TabIndex = 5;
             this.lblLoanerNumber.Text = "Loaner Number:";
             // 
             // lblBrand
@@ -62,21 +62,23 @@
             this.lblBrand.Location = new System.Drawing.Point(12, 70);
             this.lblBrand.Name = "lblBrand";
             this.lblBrand.Size = new System.Drawing.Size(47, 16);
-            this.lblBrand.TabIndex = 1;
+            this.lblBrand.TabIndex = 7;
             this.lblBrand.Text = "Brand:";
             // 
             // lblWarranty
             // 
+            this.lblWarranty.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblWarranty.AutoSize = true;
             this.lblWarranty.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblWarranty.Location = new System.Drawing.Point(12, 130);
+            this.lblWarranty.Location = new System.Drawing.Point(219, 130);
             this.lblWarranty.Name = "lblWarranty";
             this.lblWarranty.Size = new System.Drawing.Size(65, 16);
-            this.lblWarranty.TabIndex = 2;
+            this.lblWarranty.TabIndex = 13;
             this.lblWarranty.Text = "Warranty:";
             // 
             // lblTNumber
             // 
+            this.lblTNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblTNumber.AutoSize = true;
             this.lblTNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTNumber.Location = new System.Drawing.Point(12, 218);
@@ -89,24 +91,26 @@
             // 
             this.lblSerialNumber.AutoSize = true;
             this.lblSerialNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSerialNumber.Location = new System.Drawing.Point(219, 10);
+            this.lblSerialNumber.Location = new System.Drawing.Point(12, 130);
             this.lblSerialNumber.Name = "lblSerialNumber";
             this.lblSerialNumber.Size = new System.Drawing.Size(97, 16);
-            this.lblSerialNumber.TabIndex = 4;
+            this.lblSerialNumber.TabIndex = 11;
             this.lblSerialNumber.Text = "Serial Number:";
             // 
             // lblModel
             // 
+            this.lblModel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblModel.AutoSize = true;
             this.lblModel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblModel.Location = new System.Drawing.Point(219, 70);
             this.lblModel.Name = "lblModel";
             this.lblModel.Size = new System.Drawing.Size(49, 16);
-            this.lblModel.TabIndex = 5;
+            this.lblModel.TabIndex = 9;
             this.lblModel.Text = "Model:";
             // 
             // lblUserPCSerial
             // 
+            this.lblUserPCSerial.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblUserPCSerial.AutoSize = true;
             this.lblUserPCSerial.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblUserPCSerial.Location = new System.Drawing.Point(10, 278);
@@ -124,19 +128,19 @@
             this.tbLoanerNumber.Name = "tbLoanerNumber";
             this.tbLoanerNumber.ReadOnly = true;
             this.tbLoanerNumber.Size = new System.Drawing.Size(150, 29);
-            this.tbLoanerNumber.TabIndex = 7;
+            this.tbLoanerNumber.TabIndex = 6;
             this.tbLoanerNumber.TabStop = false;
             // 
             // tbSerialNumber
             // 
             this.tbSerialNumber.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbSerialNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbSerialNumber.Location = new System.Drawing.Point(222, 28);
+            this.tbSerialNumber.Location = new System.Drawing.Point(15, 149);
             this.tbSerialNumber.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbSerialNumber.Name = "tbSerialNumber";
             this.tbSerialNumber.ReadOnly = true;
-            this.tbSerialNumber.Size = new System.Drawing.Size(150, 29);
-            this.tbSerialNumber.TabIndex = 8;
+            this.tbSerialNumber.Size = new System.Drawing.Size(150, 30);
+            this.tbSerialNumber.TabIndex = 12;
             this.tbSerialNumber.TabStop = false;
             // 
             // tbBrand
@@ -148,79 +152,89 @@
             this.tbBrand.Name = "tbBrand";
             this.tbBrand.ReadOnly = true;
             this.tbBrand.Size = new System.Drawing.Size(150, 29);
-            this.tbBrand.TabIndex = 9;
+            this.tbBrand.TabIndex = 8;
             this.tbBrand.TabStop = false;
             // 
             // tbModel
             // 
+            this.tbModel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.tbModel.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbModel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbModel.Location = new System.Drawing.Point(222, 89);
             this.tbModel.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbModel.Name = "tbModel";
             this.tbModel.ReadOnly = true;
-            this.tbModel.Size = new System.Drawing.Size(150, 29);
+            this.tbModel.Size = new System.Drawing.Size(150, 30);
             this.tbModel.TabIndex = 10;
             this.tbModel.TabStop = false;
             // 
             // tbWarranty
             // 
+            this.tbWarranty.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.tbWarranty.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbWarranty.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbWarranty.Location = new System.Drawing.Point(15, 149);
+            this.tbWarranty.Location = new System.Drawing.Point(222, 149);
             this.tbWarranty.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbWarranty.Name = "tbWarranty";
             this.tbWarranty.ReadOnly = true;
-            this.tbWarranty.Size = new System.Drawing.Size(150, 29);
-            this.tbWarranty.TabIndex = 11;
+            this.tbWarranty.Size = new System.Drawing.Size(150, 30);
+            this.tbWarranty.TabIndex = 14;
             this.tbWarranty.TabStop = false;
             // 
             // tbTNumber
             // 
+            this.tbTNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.tbTNumber.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbTNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbTNumber.Location = new System.Drawing.Point(15, 237);
             this.tbTNumber.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbTNumber.Name = "tbTNumber";
             this.tbTNumber.Size = new System.Drawing.Size(150, 29);
-            this.tbTNumber.TabIndex = 12;
+            this.tbTNumber.TabIndex = 0;
             this.tbTNumber.TextChanged += new System.EventHandler(this.tbTNumber_TextChanged);
             // 
             // tbUserPCSerial
             // 
+            this.tbUserPCSerial.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.tbUserPCSerial.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbUserPCSerial.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbUserPCSerial.Location = new System.Drawing.Point(15, 297);
             this.tbUserPCSerial.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbUserPCSerial.Name = "tbUserPCSerial";
             this.tbUserPCSerial.Size = new System.Drawing.Size(150, 29);
-            this.tbUserPCSerial.TabIndex = 14;
+            this.tbUserPCSerial.TabIndex = 2;
             this.tbUserPCSerial.TextChanged += new System.EventHandler(this.tbUserPCSerial_TextChanged);
             // 
             // btnCancel
             // 
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCancel.Location = new System.Drawing.Point(65, 342);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(100, 30);
-            this.btnCancel.TabIndex = 16;
+            this.btnCancel.TabIndex = 4;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnAccept
             // 
+            this.btnAccept.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAccept.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnAccept.Location = new System.Drawing.Point(222, 342);
             this.btnAccept.Name = "btnAccept";
             this.btnAccept.Size = new System.Drawing.Size(100, 30);
-            this.btnAccept.TabIndex = 15;
+            this.btnAccept.TabIndex = 3;
             this.btnAccept.Text = "Check Out";
             this.btnAccept.UseVisualStyleBackColor = true;
             this.btnAccept.Click += new System.EventHandler(this.btnAccept_Click);
             // 
             // lblUsersInfo
             // 
+            this.lblUsersInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblUsersInfo.AutoSize = true;
             this.lblUsersInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblUsersInfo.Location = new System.Drawing.Point(138, 190);
@@ -231,6 +245,7 @@
             // 
             // lblTicketNumber
             // 
+            this.lblTicketNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lblTicketNumber.AutoSize = true;
             this.lblTicketNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTicketNumber.Location = new System.Drawing.Point(219, 218);
@@ -241,22 +256,23 @@
             // 
             // tbTicketNumber
             // 
+            this.tbTicketNumber.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.tbTicketNumber.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbTicketNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbTicketNumber.Location = new System.Drawing.Point(222, 237);
             this.tbTicketNumber.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbTicketNumber.Name = "tbTicketNumber";
             this.tbTicketNumber.Size = new System.Drawing.Size(150, 29);
-            this.tbTicketNumber.TabIndex = 13;
+            this.tbTicketNumber.TabIndex = 1;
             this.tbTicketNumber.TextChanged += new System.EventHandler(this.tbTicketNumber_TextChanged);
             // 
             // CheckOutOrIn
             // 
             this.AcceptButton = this.btnAccept;
-            this.CancelButton = this.btnCancel;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(380, 380);
+            this.CancelButton = this.btnCancel;
+            this.ClientSize = new System.Drawing.Size(376, 376);
             this.ControlBox = false;
             this.Controls.Add(this.tbTicketNumber);
             this.Controls.Add(this.lblTicketNumber);

@@ -558,7 +558,6 @@ namespace Loaned_PC_Tracker_Server {
             PCtoEdit.MergeChanges(changedPC);
 
             UpdateStatus(">> Sending updates to other clients connected to " + client.Site);
-            //BroadcastUpdateToSite("> User " + client.UserName + modification + PCtoEdit.Serial, client.Site);
             BroadcastUpdateToSite(PCtoEdit, client);
         }
 
@@ -570,9 +569,8 @@ namespace Loaned_PC_Tracker_Server {
         public void BroadcastUpdateToSite(string broadcastMsg, Client client) {
             var serializedData = new List<byte>();
             serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Broadcast));
-            serializedData.AddRange(BitConverter.GetBytes(';'));
             serializedData.AddRange(SerializeString(broadcastMsg));
-            foreach (Client c in ClientList.FindAll(c => c.Site == client.Site)) {
+            foreach (Client c in ClientList.FindAll(c => (c.Site == client.Site && c.Hotswaps == client.Hotswaps))) {
                 if(c != client) {
                     UpdateStatus(">>> Sending update broadcast to " + c.UserName);
                     c.StreamDataToClient(serializedData.ToArray(), this);
@@ -589,7 +587,7 @@ namespace Loaned_PC_Tracker_Server {
             var serializedData = new List<byte>();
             serializedData.AddRange(BitConverter.GetBytes((int)DataIdentifier.Update));
             serializedData.AddRange(updatedPC.SerializeLaptop());
-            foreach (Client c in ClientList.FindAll(c => c.Site == client.Site)) {
+            foreach (Client c in ClientList.FindAll(c => (c.Site == client.Site && c.Hotswaps == client.Hotswaps))) {
                 if (c != client) {
                     UpdateStatus(">>> Sending update broadcast to " + c.UserName);
                     c.StreamDataToClient(serializedData.ToArray(), this);

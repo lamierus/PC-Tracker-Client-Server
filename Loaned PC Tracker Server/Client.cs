@@ -81,6 +81,7 @@ namespace Loaned_PC_Tracker_Server {
                         siht.SendPCsForSite(this, pcRequest.SiteName, pcRequest.Type);
                     } else if (streamIdentifier == DataIdentifier.Update) {
                         PCChange changedPC = new PCChange(inStream);
+                        //siht.BroadcastUpdateToSite("> User " + UserName + " is modifying " + changedPC.Serial, this);
                         siht.updatePC(changedPC, this);
                     } else if(streamIdentifier == DataIdentifier.Laptop) {
 

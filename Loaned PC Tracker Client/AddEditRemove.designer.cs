@@ -62,7 +62,7 @@
             // 
             this.lblWarranty.AutoSize = true;
             this.lblWarranty.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblWarranty.Location = new System.Drawing.Point(12, 130);
+            this.lblWarranty.Location = new System.Drawing.Point(225, 130);
             this.lblWarranty.Name = "lblWarranty";
             this.lblWarranty.Size = new System.Drawing.Size(65, 16);
             this.lblWarranty.TabIndex = 2;
@@ -72,7 +72,7 @@
             // 
             this.lblSerialNumber.AutoSize = true;
             this.lblSerialNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSerialNumber.Location = new System.Drawing.Point(225, 9);
+            this.lblSerialNumber.Location = new System.Drawing.Point(12, 130);
             this.lblSerialNumber.Name = "lblSerialNumber";
             this.lblSerialNumber.Size = new System.Drawing.Size(97, 16);
             this.lblSerialNumber.TabIndex = 4;
@@ -96,18 +96,18 @@
             this.tbLoanerNumber.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbLoanerNumber.Name = "tbLoanerNumber";
             this.tbLoanerNumber.Size = new System.Drawing.Size(150, 29);
-            this.tbLoanerNumber.TabIndex = 7;
+            this.tbLoanerNumber.TabIndex = 0;
             this.tbLoanerNumber.TextChanged += new System.EventHandler(this.tbLoanerNumber_TextChanged);
             // 
             // tbSerialNumber
             // 
             this.tbSerialNumber.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbSerialNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbSerialNumber.Location = new System.Drawing.Point(228, 28);
+            this.tbSerialNumber.Location = new System.Drawing.Point(15, 149);
             this.tbSerialNumber.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbSerialNumber.Name = "tbSerialNumber";
             this.tbSerialNumber.Size = new System.Drawing.Size(150, 30);
-            this.tbSerialNumber.TabIndex = 8;
+            this.tbSerialNumber.TabIndex = 3;
             this.tbSerialNumber.TextChanged += new System.EventHandler(this.tbSerialNumber_TextChanged);
             // 
             // tbBrand
@@ -118,7 +118,7 @@
             this.tbBrand.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbBrand.Name = "tbBrand";
             this.tbBrand.Size = new System.Drawing.Size(150, 29);
-            this.tbBrand.TabIndex = 9;
+            this.tbBrand.TabIndex = 1;
             this.tbBrand.TextChanged += new System.EventHandler(this.tbBrand_TextChanged);
             // 
             // tbModel
@@ -128,28 +128,29 @@
             this.tbModel.Location = new System.Drawing.Point(228, 88);
             this.tbModel.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbModel.Name = "tbModel";
-            this.tbModel.Size = new System.Drawing.Size(150, 30);
-            this.tbModel.TabIndex = 10;
+            this.tbModel.Size = new System.Drawing.Size(150, 29);
+            this.tbModel.TabIndex = 2;
             this.tbModel.TextChanged += new System.EventHandler(this.tbModel_TextChanged);
             // 
             // tbWarranty
             // 
             this.tbWarranty.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
             this.tbWarranty.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbWarranty.Location = new System.Drawing.Point(15, 149);
+            this.tbWarranty.Location = new System.Drawing.Point(228, 149);
             this.tbWarranty.MinimumSize = new System.Drawing.Size(4, 30);
             this.tbWarranty.Name = "tbWarranty";
-            this.tbWarranty.Size = new System.Drawing.Size(150, 29);
-            this.tbWarranty.TabIndex = 11;
+            this.tbWarranty.Size = new System.Drawing.Size(150, 30);
+            this.tbWarranty.TabIndex = 4;
             this.tbWarranty.TextChanged += new System.EventHandler(this.tbWarranty_TextChanged);
             // 
             // btnCancel
             // 
+            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnCancel.Location = new System.Drawing.Point(65, 209);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(100, 30);
-            this.btnCancel.TabIndex = 15;
+            this.btnCancel.TabIndex = 6;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -160,7 +161,7 @@
             this.btnAccept.Location = new System.Drawing.Point(228, 209);
             this.btnAccept.Name = "btnAccept";
             this.btnAccept.Size = new System.Drawing.Size(100, 30);
-            this.btnAccept.TabIndex = 16;
+            this.btnAccept.TabIndex = 5;
             this.btnAccept.Text = "Accept";
             this.btnAccept.UseVisualStyleBackColor = true;
             this.btnAccept.Click += new System.EventHandler(this.btnAccept_Click);
@@ -170,7 +171,7 @@
             this.rtbWarning.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.rtbWarning.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.rtbWarning.ForeColor = System.Drawing.Color.Firebrick;
-            this.rtbWarning.Location = new System.Drawing.Point(173, 145);
+            this.rtbWarning.Location = new System.Drawing.Point(179, 8);
             this.rtbWarning.Margin = new System.Windows.Forms.Padding(5);
             this.rtbWarning.Name = "rtbWarning";
             this.rtbWarning.ReadOnly = true;
@@ -179,15 +180,18 @@
             this.rtbWarning.TabIndex = 17;
             this.rtbWarning.TabStop = false;
             this.rtbWarning.Text = "";
+            this.rtbWarning.Visible = false;
             // 
             // AddEditRemove
             // 
             this.AcceptButton = this.btnAccept;
-            this.CancelButton = this.btnCancel;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(390, 245);
+            this.CancelButton = this.btnCancel;
+            this.ClientSize = new System.Drawing.Size(386, 241);
             this.ControlBox = false;
+            this.Controls.Add(this.tbLoanerNumber);
+            this.Controls.Add(this.lblLoanerNumber);
             this.Controls.Add(this.rtbWarning);
             this.Controls.Add(this.btnAccept);
             this.Controls.Add(this.btnCancel);
@@ -195,12 +199,10 @@
             this.Controls.Add(this.tbModel);
             this.Controls.Add(this.tbBrand);
             this.Controls.Add(this.tbSerialNumber);
-            this.Controls.Add(this.tbLoanerNumber);
             this.Controls.Add(this.lblModel);
             this.Controls.Add(this.lblSerialNumber);
             this.Controls.Add(this.lblWarranty);
             this.Controls.Add(this.lblBrand);
-            this.Controls.Add(this.lblLoanerNumber);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "AddEditRemove";
             this.ShowIcon = false;

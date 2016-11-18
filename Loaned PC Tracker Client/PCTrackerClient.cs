@@ -418,7 +418,7 @@ namespace Loaned_PC_Tracker_Client {
         private void btnRemoveOld_Click(object sender, EventArgs e) {
             if (CurrentlyAvailable.Count > 0) {
                 Laptop PCtoRemove = (Laptop)dgvAvailable.SelectedRows[0].DataBoundItem;
-                using (var form = new AddEditRemove(PCtoRemove, true)) {
+                using (var form = new AddEditRemove(PCtoRemove, true, rbHotSwaps.Checked)) {
                     var result = form.ShowDialog();
                     if (result == DialogResult.OK) {
                         CurrentlyAvailable.Remove(PCtoRemove);

@@ -19,6 +19,9 @@ namespace Loaned_PC_Tracker_Client {
             tbWarranty.Text = ReturnPC.Warranty;
 
             if (Hotswap) {
+                lblLoanerNumber.Visible = false;
+                tbLoanerNumber.Visible = false;
+            } else {
                 lblUserPCSerial.Visible = false;
                 tbUserPCSerial.Visible = false;
             }

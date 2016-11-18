@@ -12,11 +12,14 @@ namespace Loaned_PC_Tracker_Client {
 
             Hotswap = hotswap;
             if (Hotswap) {
-                tbLoanerNumber.ReadOnly = true;
+                //tbLoanerNumber.ReadOnly = true;
+                //tbLoanerNumber.Text = string.Empty;
+                lblLoanerNumber.Visible = false;
+                tbLoanerNumber.Visible = false;
             }
         }
 
-        public AddEditRemove(Laptop PCtoEdit, bool removePC, bool hotswap = false) {
+        public AddEditRemove(Laptop PCtoEdit, bool removePC, bool hotswap) {
             InitializeComponent();
             
             ReturnPC = PCtoEdit;
@@ -30,8 +33,12 @@ namespace Loaned_PC_Tracker_Client {
             tbWarranty.Text = ReturnPC.Warranty;
 
             if (Hotswap) {
-                tbLoanerNumber.ReadOnly = true;
-            }else if (RemovePC) {
+                //tbLoanerNumber.ReadOnly = true;
+                //tbLoanerNumber.Text = string.Empty;
+                lblLoanerNumber.Visible = false;
+                tbLoanerNumber.Visible = false;
+            }
+            if (RemovePC) {
                 btnAccept.Text = "Confirm";
                 tbBrand.ReadOnly = true;
                 tbLoanerNumber.ReadOnly = true;
@@ -39,6 +46,7 @@ namespace Loaned_PC_Tracker_Client {
                 tbSerialNumber.ReadOnly = true;
                 tbWarranty.ReadOnly = true;
                 rtbWarning.Text += "WARNING:" + Environment.NewLine + "Confirmation will remove the PC from the list, permanently.";
+                rtbWarning.Visible = true;
             }
         }
 

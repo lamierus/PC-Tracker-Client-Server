@@ -5,7 +5,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using Excel = Microsoft.Office.Interop.Excel;
+//using Excel = Microsoft.Office.Interop.Excel;
+using Excel;
 using System.Net;
 using System.Net.Sockets;
 
@@ -77,13 +78,14 @@ namespace Loaned_PC_Tracker_Server {
                 Visible = false,
                 DisplayAlerts = false
             };
-            Excel.Workbook workbook;
-            Excel.Worksheet worksheet;
-            
-            workbook = excelApp.Workbooks.Open(FilePath + SiteFileName);
-            worksheet = workbook.Worksheets.Item[1];
+            //Excel.Workbook workbook;
+            //Excel.Worksheet worksheet;
 
-            int localSitesNum = (int)worksheet.Cells[1, 2].Value;
+			//worksheet = excelApp.Workbooks.Open(FilePath + SiteFileName).Worksheets.Item[1];
+            var workbook = excelApp.Workbooks.Open(FilePath + SiteFileName);
+			var worksheet = (Excel.Worksheet)workbook.Worksheets.Item[1];
+
+			int localSitesNum = (int)worksheet.Cells[1, 2].Value;
 
             FillSiteList(localSitesNum, worksheet);
             workbook.Close();
@@ -173,7 +175,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="site"></param>
         /// <param name="workbook"></param>
         private void addLaptopstoSite(bool hotswaps, Site site, Excel.Workbook workbook) {
-            Excel.Worksheet currentSheet = workbook.Worksheets.Item[1];
+			var currentSheet = (Excel.Worksheet)workbook.Worksheets.Item[1];
 
             int lastRow = getMaxRow(currentSheet);
             ProgressMax = lastRow;
@@ -470,7 +472,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="PCs"></param>
         /// <param name="workbook"></param>
         private void FillSheet(List<Laptop> PCs, Excel.Workbook workbook) {
-            Excel.Worksheet sheet = workbook.Worksheets.Item[1];
+			var sheet = (Excel.Worksheet)workbook.Worksheets.Item[1];
             int lastrow = 2;
             foreach (Laptop PC in PCs) {
                 sheet.Rows[lastrow].Delete();

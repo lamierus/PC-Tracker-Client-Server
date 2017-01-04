@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 //using Excel = Microsoft.Office.Interop.Excel;
 using Excel;
+using System.Data;
 using System.Net;
 using System.Net.Sockets;
 
@@ -16,8 +17,10 @@ namespace Loaned_PC_Tracker_Server {
         private TcpListener serverSocket = new TcpListener(IPAddress.Any, 8888);
         private Thread AcceptClients;
         private List<Site> siteList = new List<Site>();
-        //private string FilePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\PC Tracker\\";
-        private string FilePath = "C:\\Users\\Tech\\PC Tracker\\";
+		private string FilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) +
+                                  Path.DirectorySeparatorChar + "Documents" +
+		                          Path.DirectorySeparatorChar + "PC Tracker" + Path.DirectorySeparatorChar;
+        //private string FilePath = "C:\\Users\\Tech\\PC Tracker\\";
         private string SiteFileName = "Sites.xlsx";
         private LoadingProgress ProgressBarForm;
         private int ProgressMax;
@@ -74,34 +77,59 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_DoWork(object sender, DoWorkEventArgs e) {
-            Excel.Application excelApp = new Excel.Application() {
-                Visible = false,
-                DisplayAlerts = false
-            };
-            //Excel.Workbook workbook;
-            //Excel.Worksheet worksheet;
+			string fileName = FilePath + SiteFileName;
 
-			//worksheet = excelApp.Workbooks.Open(FilePath + SiteFileName).Worksheets.Item[1];
-            var workbook = excelApp.Workbooks.Open(FilePath + SiteFileName);
-			var worksheet = (Excel.Worksheet)workbook.Worksheets.Item[1];
+			//4. DataTable - Transform the data in to a table to pass to the other functions.
+			DataTable dTable = GetDataTable(fileName, false);//result.Tables[0];
 
-			int localSitesNum = (int)worksheet.Cells[1, 2].Value;
+			int localSitesNum = intCheckNull(dTable.Rows[0][1]);// .Cells[1, 2].Value;
 
-            FillSiteList(localSitesNum, worksheet);
-            workbook.Close();
-            excelApp.Quit();
+            //FillSiteList(localSitesNum, worksheet);
+			FillSiteList(localSitesNum, dTable);
         }
+
+		/// <summary>
+		/// 	
+		/// </summary>
+		/// <returns>The data table.</returns>
+		/// <param name="file">File.</param>
+		/// <param name="colNames">If set to <c>true</c> col names.</param>
+		private DataTable GetDataTable(string file, bool colNames) {
+			FileStream stream = File.Open(file, FileMode.Open, FileAccess.Read);
+			IExcelDataReader excelReader;
+
+			//1. Reading Excel file
+			if (Path.GetExtension(file).ToUpper() == ".XLS") {
+				//1.1 Reading from a binary Excel file ('97-2003 format; *.xls)
+				excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
+			} else {
+				//1.2 Reading from a OpenXml Excel file (2007 format; *.xlsx)
+				excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+			}
+
+			//2. DataSet - Create column names from first row
+			excelReader.IsFirstRowAsColumnNames = colNames;
+
+			//3. DataSet - The result of each spreadsheet will be created in the result.Tables
+			DataSet result = excelReader.AsDataSet();
+
+			//5. Free resources (IExcelDataReader is IDisposable)
+			excelReader.Close();
+
+			return result.Tables[0];
+		}
 
         /// <summary>
         ///     load the sites into the siteList variable
         /// </summary>
         /// <param name="sitesNum"></param>
-        /// <param name="worksheet"></param>
-        private void FillSiteList(int sitesNum, Excel.Worksheet worksheet) {
+        /// <param name="dTable"></param>
+        private void FillSiteList(int sitesNum, DataTable dTable) {
             ProgressMax = sitesNum;
             string siteName;
             for (int i = 1; i <= sitesNum; i++) {
-                siteName = ((string)worksheet.Cells[i, 1].Value).Split(' ')[0];
+                //siteName = ((string)worksheet.Cells[i, 1].Value).Split(' ')[0];
+				siteName = (stringCheckNull(dTable.Rows[i][0])).Split(' ')[0];
                 siteList.Add(new Site(siteName));
                 UpdateStatus("> " + siteName);
                 bgwLoadSites.ReportProgress(i);
@@ -150,21 +178,14 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadPCs_DoWork(object sender, DoWorkEventArgs e) {
-            Excel.Application excelApp = new Excel.Application() {
-                Visible = false,
-                DisplayAlerts = false
-            };
+			//interprets the argument sent to the backgroundworker as a Site object
+			Site site = (Site)e.Argument;
 
-            //interprets the argument sent to the backgroundworker as a Site object
-            Site site = (Site)e.Argument;
+			string fileName = FilePath + site.Name + Path.DirectorySeparatorChar + "Loaners.xlsx";
+			addLaptopstoSite(false, site, GetDataTable(fileName, true));
 
-            Excel.Workbook workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Loaners.xlsx");
-            addLaptopstoSite(false, site, workbook);
-
-            workbook = excelApp.Workbooks.Open(FilePath + site.Name + "\\Hotswaps.xlsx");
-            addLaptopstoSite(true, site, workbook);
-
-            excelApp.Quit();
+			fileName = FilePath + site.Name + Path.DirectorySeparatorChar + "Hotswaps.xlsx";
+			addLaptopstoSite(true, site, GetDataTable(fileName, true));
         }
 
         /// <summary>
@@ -174,17 +195,17 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="hotswaps"></param>
         /// <param name="site"></param>
         /// <param name="workbook"></param>
-        private void addLaptopstoSite(bool hotswaps, Site site, Excel.Workbook workbook) {
-			var currentSheet = (Excel.Worksheet)workbook.Worksheets.Item[1];
+        private void addLaptopstoSite(bool hotswaps, Site site, DataTable dTable) {
+			//var currentSheet = (Excel.Worksheet)workbook.Worksheets.Item[1];
 
-            int lastRow = getMaxRow(currentSheet);
+			int lastRow = dTable.Rows.Count;//getMaxRow(currentSheet);
             ProgressMax = lastRow;
 
             Laptop newLaptop;
             Laptop prevLaptop = new Laptop();
 
             for (int index = 2; index <= lastRow; index++) {
-                newLaptop = getNewLaptop(index, ref currentSheet);
+				newLaptop = getNewLaptop(index, ref dTable);
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
                     if (hotswaps) {
@@ -197,7 +218,7 @@ namespace Loaned_PC_Tracker_Server {
                     prevLaptop = newLaptop;
                 }
             }
-            workbook.Close();
+            //workbook.Close();
         }
 
         /// <summary>
@@ -208,22 +229,23 @@ namespace Loaned_PC_Tracker_Server {
         /// <returns>
         ///     a new Laptop object with information read from the sheet
         /// </returns>
-        private Laptop getNewLaptop(int index, ref Excel.Worksheet sheet) {
-            int lastCol = getMaxCol(sheet);
-            // this array holds all of the information from each line of the excel sheet
-            Array laptopValues = (Array)sheet.get_Range("A" + index.ToString(), ColumnNumToString(lastCol) + index.ToString()).Cells.Value;
-            // I have to run the check null on each of these parsed cells, 
-            // due to being brought in from an excel sheet with possible blank cells
-            Laptop newLaptop = new Laptop() {
-                Number = intCheckNull(laptopValues.GetValue(1, 1)),
-                Serial = stringCheckNull(laptopValues.GetValue(1, 2)),
-                Brand = stringCheckNull(laptopValues.GetValue(1, 3)),
-                Model = stringCheckNull(laptopValues.GetValue(1, 4)),
-                Warranty = stringCheckNull(laptopValues.GetValue(1, 5)),
-                Username = stringCheckNull(laptopValues.GetValue(1, 6)),
-                UserPCSerial = stringCheckNull(laptopValues.GetValue(1, 7)),
-                TicketNumber = stringCheckNull(laptopValues.GetValue(1, 8)),
-                CheckedOut = boolCheckNull(laptopValues.GetValue(1, 9))
+        //private Laptop getNewLaptop(int index, ref Excel.Worksheet sheet) {
+		private Laptop getNewLaptop(int index, ref DataTable dTable) {
+			int lastCol = dTable.Columns.Count;//getMaxCol(sheet);
+			// this array holds all of the information from each line of the excel sheet
+			Array laptopValues = (Array)dTable.Rows[index].ItemArray;
+			// I have to run the check null on each of these parsed cells, 
+		 	// due to being brought in from an excel sheet with possible blank cells
+			Laptop newLaptop = new Laptop() {
+				Number = intCheckNull(laptopValues.GetValue(0)),
+	            Serial = stringCheckNull(laptopValues.GetValue(1)),
+	            Brand = stringCheckNull(laptopValues.GetValue(2)),
+	            Model = stringCheckNull(laptopValues.GetValue(3)),
+	            Warranty = stringCheckNull(laptopValues.GetValue(4)),
+	            Username = stringCheckNull(laptopValues.GetValue(5)),
+	            UserPCSerial = stringCheckNull(laptopValues.GetValue(6)),
+	            TicketNumber = stringCheckNull(laptopValues.GetValue(7)),
+	            CheckedOut = boolCheckNull(laptopValues.GetValue(8))
             };
             return newLaptop;
         }
@@ -295,26 +317,6 @@ namespace Loaned_PC_Tracker_Server {
         }
 
         /// <summary>
-        ///     Returns the last row number that has any information in any cell of an excel sheet
-        /// </summary>
-        /// <param name="worksheet"></param>
-        /// <returns> the last row number with any data </returns>
-        private int getMaxRow(Excel.Worksheet worksheet) {
-            int lastRow = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell).Row;
-            return lastRow;
-        }
-
-        /// <summary>
-        ///     returns the last column number that has any information in any cell of an excel sheet
-        /// </summary>
-        /// <param name="worksheet"></param>
-        /// <returns> the last column number with any data </returns>
-        private int getMaxCol(Excel.Worksheet worksheet) {
-            int lastCol = worksheet.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell).Column;
-            return lastCol;
-        }
-
-        /// <summary>
         ///     returns a full column name using the column number as a basis
         /// </summary>
         /// <param name="columnNumber"></param>
@@ -348,14 +350,14 @@ namespace Loaned_PC_Tracker_Server {
         /// </summary>
         /// <param name="parameter"></param>
         private void ConnectClient(object parameter) {
-            var serverSocket = parameter as TcpListener;
-            var clientSocket = new TcpClient();
+            var serverSock = parameter as TcpListener;
+            var clientSock = new TcpClient();
             //create a permanent loop to accept clients, while the server is active
             while (true) {
                 try {
-                    clientSocket = serverSocket.AcceptTcpClient();
+                    clientSock = serverSock.AcceptTcpClient();
                     //create the client object, once a connection is accepted
-                    Client newClient = new Client(clientSocket, this);
+                    Client newClient = new Client(clientSock, this);
                     //add that new Client to the List of Client objects
                     ClientList.Add(newClient);
                     UpdateStatus(">> Client " + newClient.UserName + " connected!");
@@ -437,7 +439,7 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void saveToolStripMenuItem_Click(object sender, EventArgs e) {
-            SaveChanges();
+            //SaveChanges();
         }
 
         /// <summary>
@@ -446,7 +448,7 @@ namespace Loaned_PC_Tracker_Server {
         /// </summary>
         /// <param name="siteName"></param>
         /// <param name="hotswaps"></param>
-        private void SaveChanges() {
+        /*private void SaveChanges() {
             Excel.Application excelApp = new Excel.Application() {
                 Visible = false,
                 DisplayAlerts = false
@@ -489,7 +491,7 @@ namespace Loaned_PC_Tracker_Server {
             }
             workbook.Save();
             workbook.Close();
-        }
+        }*/
 
         /// <summary>
         ///     runs the save function at set intervals
@@ -510,12 +512,12 @@ namespace Loaned_PC_Tracker_Server {
                     }
                 }
                 if (!bgwAutoSave.CancellationPending) {
-                    SaveChanges();
+                    //SaveChanges();
                     UpdateStatus("<< Saving completed!");
                     UpdateStatus("<< Saving Log!");
                     string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-"
                         + DateTime.Now.Month.ToString() + " " + DateTime.Now.ToString("HH.mm.ss tt");
-                    string logFile = FilePath + "logs\\log - " + date + ".txt";
+                    string logFile = FilePath + "logs" + Path.DirectorySeparatorChar + "log - " + date + ".txt";
                     if (!File.Exists(logFile)) {
                         File.Create(logFile).Dispose();
                     }
@@ -618,12 +620,12 @@ namespace Loaned_PC_Tracker_Server {
                 bgwAutoSave.CancelAsync();
             } while (!bgwAutoSave.IsBusy);
             if (Changed) {
-                SaveChanges();
+                //SaveChanges();
             }
             string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Month.ToString();
-            string logFile = FilePath + "logs\\log - " + date + ".txt";
+            string logFile = FilePath + "logs" + Path.DirectorySeparatorChar + "log - " + date + ".txt";
             if (!File.Exists(logFile)) {
-                File.Create(logFile).Dispose();
+				File.Create(logFile).Dispose();
             }
             File.AppendAllText(logFile, tbLog.Text);
         }
@@ -654,6 +656,11 @@ namespace Loaned_PC_Tracker_Server {
                 if (!bgwAutoSave.IsBusy) {
                     bgwAutoSave.RunWorkerAsync();
                 }
+Warning message
+The Job you were trying to view is not available. Please look below for other jobs.
+Search Jobs
+Jobs Within
+
             } else {
                 bgwAutoSave.CancelAsync();
             }

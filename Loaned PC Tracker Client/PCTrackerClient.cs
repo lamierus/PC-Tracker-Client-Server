@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -17,12 +16,9 @@ namespace Loaned_PC_Tracker_Client {
         private BindingList<Laptop> CurrentlyAvailable = new BindingList<Laptop>();
         private BindingList<Laptop> CheckedOut = new BindingList<Laptop>();
         private BindingList<string> siteList = new BindingList<string>();
-        private Excel.Application excelApp = new Excel.Application() {
-            Visible = false,
-            DisplayAlerts = false
-        };
+        
         private LoadingProgress ProgressBarForm;
-        private int ProgressMax;
+        //private int ProgressMax;
         private bool WindowLoaded;
         private TcpClient ClientSocket = new TcpClient() {
             NoDelay = true,
@@ -53,7 +49,7 @@ namespace Loaned_PC_Tracker_Client {
                         Server = connectTo.ReturnAddress;
                         numRetries = connectTo.ReturnRetries;
                     } else {
-                        Close();
+                        this.Close();
                     }
                 }
                 ConnectToServer(numRetries);
@@ -150,10 +146,6 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bgwLoadSites_ProgressChanged(object sender, ProgressChangedEventArgs e) {
-            if (ProgressBarForm.getProgressMaximum() != ProgressMax) {
-                ProgressBarForm.setProgressMaximum(ProgressMax);
-            }
-            ProgressBarForm.updateProgress(e.ProgressPercentage);
         }
 
         /// <summary>
@@ -432,7 +424,7 @@ namespace Loaned_PC_Tracker_Client {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void frmPCTracker_Closing(object sender, FormClosingEventArgs e) {
-            excelApp.Quit();
+			
         }
 
         /// <summary>

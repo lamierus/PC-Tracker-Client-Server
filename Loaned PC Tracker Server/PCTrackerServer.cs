@@ -116,7 +116,9 @@ namespace Loaned_PC_Tracker_Server {
 			//5. Free resources (IExcelDataReader is IDisposable)
 			excelReader.Close();
 
-			return result.Tables[0];
+            if (result.Tables.Count > 0)
+                return result.Tables[0];
+            return new DataTable();
 		}
 
         /// <summary>
@@ -127,7 +129,7 @@ namespace Loaned_PC_Tracker_Server {
         private void FillSiteList(int sitesNum, DataTable dTable) {
             ProgressMax = sitesNum;
             string siteName;
-            for (int i = 1; i <= sitesNum; i++) {
+            for (int i = 0; i < sitesNum; i++) {
                 //siteName = ((string)worksheet.Cells[i, 1].Value).Split(' ')[0];
 				siteName = (stringCheckNull(dTable.Rows[i][0])).Split(' ')[0];
                 siteList.Add(new Site(siteName));
@@ -204,7 +206,7 @@ namespace Loaned_PC_Tracker_Server {
             Laptop newLaptop;
             Laptop prevLaptop = new Laptop();
 
-            for (int index = 2; index <= lastRow; index++) {
+            for (int index = 1; index < lastRow; index++) {
 				newLaptop = getNewLaptop(index, ref dTable);
                 //this verifies that the newly created laptop is not a copy of the previous one
                 if (newLaptop != prevLaptop) {
@@ -289,10 +291,10 @@ namespace Loaned_PC_Tracker_Server {
         /// <param name="value"></param>
         /// <returns> a if the cell contents are null or true/false</returns>
         private bool boolCheckNull(object value) {
-            if (value == null) {
+            if (value == null || intCheckNull(value) == 0) {
                 return false;
             }
-            if ((bool)value) {
+            if ((bool)value || intCheckNull(value) == 1) {
                 return true;
             }
             return false;
@@ -656,11 +658,6 @@ namespace Loaned_PC_Tracker_Server {
                 if (!bgwAutoSave.IsBusy) {
                     bgwAutoSave.RunWorkerAsync();
                 }
-Warning message
-The Job you were trying to view is not available. Please look below for other jobs.
-Search Jobs
-Jobs Within
-
             } else {
                 bgwAutoSave.CancelAsync();
             }

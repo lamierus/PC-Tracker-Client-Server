@@ -44,7 +44,7 @@ namespace Loaned_PC_Tracker_Server {
                     UserName = "Client #" + UserCount++.ToString();
                 }
             } catch (Exception ex) {
-                siht.UpdateStatus("XXX " + ex.Message);
+                siht.UpdateStatus("XXXX: " + ex.Message);
                 return false;
             }
             bgwWaitForPCRequests.RunWorkerAsync(siht);

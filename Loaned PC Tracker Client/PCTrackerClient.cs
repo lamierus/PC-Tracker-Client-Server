@@ -1,18 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Collections.Generic;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Loaned_PC_Tracker_Client {
+    
     public partial class PCTrackerClient : Form {
         private const string KeyLocation = "SOFTWARE\\PC Tracker";
         private Microsoft.Win32.RegistryKey ProgramKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(KeyLocation);
-        private string Server = "MXL3090GHT-X7";
+        private string Server = "127.0.0.1";//"MXL3090GHT-X7";
         private BindingList<Laptop> CurrentlyAvailable = new BindingList<Laptop>();
         private BindingList<Laptop> CheckedOut = new BindingList<Laptop>();
         private BindingList<string> siteList = new BindingList<string>();
@@ -173,8 +174,8 @@ namespace Loaned_PC_Tracker_Client {
             if (cbSiteChooser.SelectedIndex != cbSiteChooser.FindString(GetDefaultSite(ProgramKey))) {
                 rbHidden.Checked = true;
                 btnSetDefaultSite.Enabled = true;
-                CurrentlyAvailable.Clear();
-                CheckedOut.Clear();
+                rbHidden.Checked = true;
+                ClearPCLists();
             } else {
                 btnSetDefaultSite.Enabled = false;
             }

@@ -17,6 +17,7 @@ namespace Loaned_PC_Tracker_Client {
         public ConnectionForm(string address) {
             InitializeComponent();
             tbAddress.Text = address;
+            this.Text = Environment.UserName;
         }
 
         private void btnConnect_Click(object sender, EventArgs e) {

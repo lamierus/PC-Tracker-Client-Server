@@ -168,7 +168,7 @@
             this.dgvCheckedOut.ReadOnly = true;
             this.dgvCheckedOut.RowHeadersVisible = false;
             this.dgvCheckedOut.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvCheckedOut.Size = new System.Drawing.Size(300, 310);
+            this.dgvCheckedOut.Size = new System.Drawing.Size(303, 310);
             this.dgvCheckedOut.TabIndex = 6;
             this.dgvCheckedOut.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCheckedOut_CellClick);
             // 
@@ -322,7 +322,6 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
             this.ClientSize = new System.Drawing.Size(734, 472);
-            this.Controls.Add(this.tbConnectionStatus);
             this.Controls.Add(this.btnSaveChanges);
             this.Controls.Add(this.btnEditPC);
             this.Controls.Add(this.btnRemoveOld);
@@ -337,6 +336,7 @@
             this.Controls.Add(this.rbLoaners);
             this.Controls.Add(this.rbHidden);
             this.Controls.Add(this.splitDataGridViews);
+            this.Controls.Add(this.tbConnectionStatus);
             this.MinimumSize = new System.Drawing.Size(616, 438);
             this.Name = "PCTrackerClient";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

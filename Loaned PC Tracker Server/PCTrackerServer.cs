@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 //using Excel = Microsoft.Office.Interop.Excel;
-using Excel;
+//using Excel;
+using ExcelDataReader;
 using System.Data;
 using System.Net;
 using System.Net.Sockets;
@@ -108,7 +109,8 @@ namespace Loaned_PC_Tracker_Server {
 			}
 
 			//2. DataSet - Create column names from first row
-			excelReader.IsFirstRowAsColumnNames = colNames;
+			//excelReader.IsFirstRowAsColumnNames = colNames;
+            
 
 			//3. DataSet - The result of each spreadsheet will be created in the result.Tables
 			DataSet result = excelReader.AsDataSet();

@@ -13,7 +13,7 @@ namespace Loaned_PC_Tracker_Client {
     public partial class PCTrackerClient : Form {
         private const string KeyLocation = "SOFTWARE\\PC Tracker";
         private Microsoft.Win32.RegistryKey ProgramKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(KeyLocation);
-        private string Server = "127.0.0.1";//"MXL3090GHT-X7";
+        private string Server = "127.0.0.1";//"MXL3090GHT-X7.clients.pg.com";
         private BindingList<Laptop> CurrentlyAvailable = new BindingList<Laptop>();
         private BindingList<Laptop> CheckedOut = new BindingList<Laptop>();
         private BindingList<string> siteList = new BindingList<string>();
@@ -22,7 +22,7 @@ namespace Loaned_PC_Tracker_Client {
         //private int ProgressMax;
         private bool WindowLoaded;
         private TcpClient ClientSocket = new TcpClient() {
-            NoDelay = true,
+            //NoDelay = true,
         };
         private delegate void StringParameterDelegate(string value);
         private delegate void LaptopParameterDelegate(Laptop laptop);
@@ -73,7 +73,8 @@ namespace Loaned_PC_Tracker_Client {
                 //once connected, the client sends a packet to the server to agknowledge logging in.
                 if (ClientSocket.Connected) {
                     NetworkStream loginStream = ClientSocket.GetStream();
-                    NamePacket handshake = new NamePacket(Environment.UserName);
+                    string userName = Environment.UserName;
+                    NamePacket handshake = new NamePacket(userName);
                     loginStream.Write(handshake.CreateDataStream(), 0, handshake.PacketLength);
                     loginStream.Flush();
                     UpdateStatus("Server Connected ... " + Server);
@@ -96,8 +97,12 @@ namespace Loaned_PC_Tracker_Client {
                 return;
             }
             // Must be on the UI thread if we've got this far
-            tbConnectionStatus.AppendText(message);
-            tbConnectionStatus.AppendText(Environment.NewLine);
+            try {
+                tbConnectionStatus.AppendText(message + Environment.NewLine);
+            }catch {
+                //if it is not accessible, then the app is more than likely crashed/closed
+                Environment.Exit(0);
+            }
         }
 
         /// <summary>

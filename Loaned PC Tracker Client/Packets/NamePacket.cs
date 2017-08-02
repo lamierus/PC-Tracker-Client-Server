@@ -12,6 +12,7 @@ namespace Loaned_PC_Tracker_Client {
 
     public class NamePacket : Packet {
         public string Name { get; set; }
+
         public override int PacketLength {
             get { return CreateDataStream().Length; }
         }

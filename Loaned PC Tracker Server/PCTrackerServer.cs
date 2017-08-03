@@ -47,8 +47,7 @@ namespace Loaned_PC_Tracker_Server {
             }
             // Must be on the UI thread if we've got this far
             if (!tbLog.IsDisposed) {
-                tbLog.AppendText(message);
-                tbLog.AppendText(Environment.NewLine);
+                tbLog.AppendText(DateTime.Now.ToLongTimeString() + " " + message + Environment.NewLine);
             }
         }
 
@@ -80,12 +79,15 @@ namespace Loaned_PC_Tracker_Server {
         private void bgwLoadSites_DoWork(object sender, DoWorkEventArgs e) {
 			string fileName = FilePath + SiteFileName;
 
-			//4. DataTable - Transform the data in to a table to pass to the other functions.
-			DataTable dTable = GetDataTable(fileName, false);//result.Tables[0];
+            //4. DataTable - Transform the data in to a table to pass to the other functions.
+            DataTable dTable;
+            if (!GetDataTable(fileName, false, out dTable)) {
+                UpdateStatus("Error: Could not load any data!");
+                return;
+            }
 
-			int localSitesNum = intCheckNull(dTable.Rows[0][1]);// .Cells[1, 2].Value;
-
-            //FillSiteList(localSitesNum, worksheet);
+			int localSitesNum = intCheckNull(dTable.Rows[0][1]);
+            
 			FillSiteList(localSitesNum, dTable);
         }
 
@@ -95,32 +97,41 @@ namespace Loaned_PC_Tracker_Server {
 		/// <returns>The data table.</returns>
 		/// <param name="file">File.</param>
 		/// <param name="colNames">If set to <c>true</c> col names.</param>
-		private DataTable GetDataTable(string file, bool colNames) {
-			FileStream stream = File.Open(file, FileMode.Open, FileAccess.Read);
-			IExcelDataReader excelReader;
+		private bool GetDataTable(string file, bool colNames, out DataTable result) {
+            DataSet resultSet = new DataSet();
+            try {
+                FileStream stream = File.Open(file, FileMode.Open, FileAccess.Read);
+                IExcelDataReader excelReader;
 
-			//1. Reading Excel file
-			if (Path.GetExtension(file).ToUpper() == ".XLS") {
-				//1.1 Reading from a binary Excel file ('97-2003 format; *.xls)
-				excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
-			} else {
-				//1.2 Reading from a OpenXml Excel file (2007 format; *.xlsx)
-				excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
-			}
+                //1. Reading Excel file
+                if (Path.GetExtension(file).ToUpper() == ".XLS") {
+                    //1.1 Reading from a binary Excel file ('97-2003 format; *.xls)
+                    excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
+                } else {
+                    //1.2 Reading from a OpenXml Excel file (2007 format; *.xlsx)
+                    excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+                }
 
-			//2. DataSet - Create column names from first row
-			//excelReader.IsFirstRowAsColumnNames = colNames;
-            
+                //2. DataSet - Create column names from first row
+                //excelReader.IsFirstRowAsColumnNames = colNames;
 
-			//3. DataSet - The result of each spreadsheet will be created in the result.Tables
-			DataSet result = excelReader.AsDataSet();
 
-			//5. Free resources (IExcelDataReader is IDisposable)
-			excelReader.Close();
+                //3. DataSet - The result of each spreadsheet will be created in the result.Tables
+                resultSet = excelReader.AsDataSet();
 
-            if (result.Tables.Count > 0)
-                return result.Tables[0];
-            return new DataTable();
+                //5. Free resources (IExcelDataReader is IDisposable)
+                excelReader.Close();
+
+            } catch (Exception e) {
+                UpdateStatus("Error!: " + e.Message);
+            }
+
+            if (resultSet.Tables.Count > 0) {
+                result = resultSet.Tables[0];
+                return true;
+            }
+            result = new DataTable();
+            return false;
 		}
 
         /// <summary>
@@ -185,11 +196,15 @@ namespace Loaned_PC_Tracker_Server {
 			//interprets the argument sent to the backgroundworker as a Site object
 			Site site = (Site)e.Argument;
 
-			string fileName = FilePath + site.Name + Path.DirectorySeparatorChar + "Loaners.xlsx";
-			addLaptopstoSite(false, site, GetDataTable(fileName, true));
+            DataTable dTable;
 
-			fileName = FilePath + site.Name + Path.DirectorySeparatorChar + "Hotswaps.xlsx";
-			addLaptopstoSite(true, site, GetDataTable(fileName, true));
+            string fileName = FilePath + site.Name + Path.DirectorySeparatorChar + "Loaners.xlsx";
+            GetDataTable(fileName, true, out dTable);
+            addLaptopstoSite(false, site, dTable );
+
+            fileName = FilePath + site.Name + Path.DirectorySeparatorChar + "Hotswaps.xlsx";
+            GetDataTable(fileName, true, out dTable);
+            addLaptopstoSite(true, site, dTable);
         }
 
         /// <summary>
@@ -627,9 +642,12 @@ namespace Loaned_PC_Tracker_Server {
                 //SaveChanges();
             }
             string date = DateTime.Now.Year.ToString() + "-" + DateTime.Now.Day.ToString() + "-" + DateTime.Now.Month.ToString();
-            string logFile = FilePath + "logs" + Path.DirectorySeparatorChar + "log - " + date + ".txt";
+            string logFileDir = FilePath + "logs" + Path.DirectorySeparatorChar;
+            string logFile = logFileDir + "log - " + date + ".txt";
             if (!File.Exists(logFile)) {
-				File.Create(logFile).Dispose();
+                if (!Directory.Exists(logFileDir))
+                    Directory.CreateDirectory(logFileDir);
+                File.Create(logFile).Dispose();
             }
             File.AppendAllText(logFile, tbLog.Text);
         }

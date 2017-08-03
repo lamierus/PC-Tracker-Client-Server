@@ -24,5 +24,25 @@ namespace Loaned_PC_Tracker_Client {
 
             return dataStream.ToArray();
         }
+
+        public string DataStreamToString() {
+            string stream = "";
+
+            foreach (byte b in CreateDataStream()) {
+                stream += b.ToString() + " ";
+            }
+
+            return stream;
+        }
+
+        public string DataStreamToString(byte[] dataStream) {
+            string stream = "";
+
+            foreach (byte b in dataStream) {
+                stream += b.ToString() + " ";
+            }
+
+            return stream;
+        }
     }
 }

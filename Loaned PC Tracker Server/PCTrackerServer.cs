@@ -368,7 +368,7 @@ namespace Loaned_PC_Tracker_Server {
                     //send the sites to the client, after connection is established
                     SendSitesToClient(newClient);
                 } catch (Exception ex) {
-                    UpdateStatus("XXX: " + ex.Message);
+                    UpdateStatus("XX: " + ex.Message);
                     break;
                 }
             }

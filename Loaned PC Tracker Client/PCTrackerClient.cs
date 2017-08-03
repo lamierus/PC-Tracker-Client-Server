@@ -22,7 +22,9 @@ namespace Loaned_PC_Tracker_Client {
         //private int ProgressMax;
         private bool WindowLoaded;
         private TcpClient ClientSocket = new TcpClient() {
-            //NoDelay = true,
+            NoDelay = false,
+            ReceiveBufferSize = 10025,
+            SendBufferSize = 10025,
         };
         private delegate void StringParameterDelegate(string value);
         private delegate void LaptopParameterDelegate(Laptop laptop);
@@ -57,6 +59,9 @@ namespace Loaned_PC_Tracker_Client {
                 bgwLoadSites.RunWorkerAsync();
                 ProgressBarForm = new LoadingProgress("Receiving Sites List");
                 ProgressBarForm.ShowDialog();
+
+                //rbLoaners.Enabled = false;
+                //rbHotSwaps.Enabled = false;
             }
         }
 
@@ -75,6 +80,10 @@ namespace Loaned_PC_Tracker_Client {
                     NetworkStream loginStream = ClientSocket.GetStream();
                     string userName = Environment.UserName;
                     NamePacket handshake = new NamePacket(userName);
+                    UpdateStatus(handshake.Name);
+                    UpdateStatus(handshake.Identifier.ToString());
+                    UpdateStatus(handshake.PacketLength.ToString());
+                    UpdateStatus(handshake.DataStreamToString());
                     loginStream.Write(handshake.CreateDataStream(), 0, handshake.PacketLength);
                     loginStream.Flush();
                     UpdateStatus("Server Connected ... " + Server);
@@ -206,6 +215,8 @@ namespace Loaned_PC_Tracker_Client {
                 SetDefaultSite(key);
                 return (string)cbSiteChooser.SelectedItem;
             }
+            //rbLoaners.Enabled = true;
+            //rbHotSwaps.Enabled = true;
             return (string)key.GetValue("Default Site");
         }
 

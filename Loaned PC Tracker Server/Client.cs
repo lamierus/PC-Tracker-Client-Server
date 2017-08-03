@@ -24,6 +24,8 @@ namespace Loaned_PC_Tracker_Server {
         public Client(TcpClient inClientSocket, PCTrackerServerForm siht) {
             ClientSocket = inClientSocket;
             ClientSocket.NoDelay = true;
+            ClientSocket.ReceiveBufferSize = 10025;
+            ClientSocket.SendBufferSize = 10025;
             bgwWaitForPCRequests.DoWork += new DoWorkEventHandler(bgwWaitForPCRequests_DoWork);
             //bgwWaitForPCRequests.ProgressChanged += new ProgressChangedEventHandler(bgwWaitForPCRequests_ProgressChanged);
             //bgwWaitForPCRequests.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgwWaitForPCRequests_RunWorkerCompleted);
@@ -36,7 +38,9 @@ namespace Loaned_PC_Tracker_Server {
         private bool startClient(PCTrackerServerForm siht) {
             byte[] InStream = new byte[10025];
             try {
-                ClientSocket.GetStream().Read(InStream, 0, ClientSocket.ReceiveBufferSize);
+                //ClientSocket.GetStream().Read(InStream, 0, ClientSocket.ReceiveBufferSize);
+                NetworkStream stream = ClientSocket.GetStream();
+                stream.Read(InStream, 0, ClientSocket.ReceiveBufferSize);
                 NamePacket handshake = new NamePacket(InStream);
                 if (handshake.Name != string.Empty && handshake.Name != null) {
                     UserName = handshake.Name;
@@ -44,7 +48,7 @@ namespace Loaned_PC_Tracker_Server {
                     UserName = "Client #" + UserCount++.ToString();
                 }
             } catch (Exception ex) {
-                siht.UpdateStatus("XXXX: " + ex.Message);
+                siht.UpdateStatus("Error Starting Client Connection: " + ex.Message);
                 return false;
             }
             bgwWaitForPCRequests.RunWorkerAsync(siht);
@@ -58,7 +62,7 @@ namespace Loaned_PC_Tracker_Server {
                 outStream.Write(dataToSend, 0, dataToSend.Length);
                 outStream.Flush();
             } catch (Exception ex) {
-                siht.UpdateStatus("XXX " + ex.Message);
+                siht.UpdateStatus("Error Streaming Data to Client:" + ex.Message);
             }
         }
 
